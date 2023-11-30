@@ -1,0 +1,1 @@
+db.discover_user_v2.createIndex({location:"2dsphere"});

@@ -1,0 +1,5 @@
+package tt
+
+func Test() {
+
+}

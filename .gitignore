@@ -1,0 +1,6 @@
+/*.log
+/go_build_*
+.idea
+/.DS_Store
+*/.DS_Store
+.DS_Store

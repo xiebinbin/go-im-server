@@ -1,0 +1,20 @@
+syntax = "proto3";
+option go_package = "./";
+package sequence;
+
+service Sequence {
+  rpc GetSequence (SequenceRequest) returns (SequenceResponse) {}
+}
+
+message SequenceRequest {
+  string uid = 1;
+  enum Type {
+      TYPE_MESSAGE = 0;
+      TYPE_MOMENTS = 1;
+  }
+  Type type = 2;
+}
+
+message SequenceResponse {
+  int64 sequence = 1;
+}
