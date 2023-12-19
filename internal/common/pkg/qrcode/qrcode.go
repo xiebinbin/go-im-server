@@ -2,6 +2,7 @@ package qrcode
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"imsdk/pkg/app"
 	"imsdk/pkg/errno"
@@ -45,7 +46,7 @@ var (
 	Host = ""
 )
 
-func GetUrlPre(qrType string) string {
+func GetUrlPre(ctx context.Context, qrType string) string {
 	if Host == "" {
 		host, _ := app.Config().GetChildConf("global", "hosts", "qrcode_host")
 		Host = host.(string)

@@ -8,11 +8,13 @@ import (
 	json "github.com/json-iterator/go"
 	"imsdk/internal/common/model/socket"
 	"imsdk/internal/common/model/user/device"
+	"imsdk/internal/common/pkg/base"
 	"imsdk/internal/common/pkg/req/request"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/funcs"
 	"imsdk/pkg/log"
 	"imsdk/pkg/response"
+	"imsdk/pkg/sdk"
 	"net/http"
 	"os"
 	"runtime"
@@ -77,7 +79,8 @@ func Connect(ctx *gin.Context) {
 	if address == "" || deviceId == "" {
 		return
 	}
-	if reqId := ctx.Query("req-id"); reqId == "" {
+	reqId := ctx.Query(base.HeaderFieldReqId)
+	if reqId == sdk.EmptyString {
 		reqId = funcs.UniqueId16()
 	}
 	defer func() {
@@ -97,6 +100,7 @@ func Connect(ctx *gin.Context) {
 		UID:      address,
 		Address:  address,
 		DeviceId: deviceId,
+		ReqId:    reqId,
 	}
 	socketHost := os.Getenv("SOCKET_HOST") // docker run -e
 	// Determine whether the terminal has established a long connection on other devices （login on the other device）

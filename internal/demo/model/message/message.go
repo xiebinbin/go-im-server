@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	json "github.com/json-iterator/go"
 	"imsdk/internal/common/dao/chat/members"
-	user "imsdk/internal/common/dao/user/infov2/info"
+	user2 "imsdk/internal/common/dao/user"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/internal/common/pkg/config"
 	"imsdk/internal/demo/model"
@@ -407,6 +407,6 @@ func GetChatMembers(aChatId, senderId string) string {
 }
 
 func GetAUId(uid string) string {
-	info, _ := user.New(getAk()).GetInfoById(uid)
-	return info.AUId
+	info, _ := user2.New().GetInfoById(uid)
+	return info.ID
 }

@@ -3,21 +3,24 @@ package bucket
 import (
 	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/model/bucket"
+	"imsdk/internal/common/pkg/aws"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
 )
 
 type GetAwsHeadObjectRequest = bucket.GetAwsHeadObjectRequest
 
+func GetPreSignURL(ctx *gin.Context) {
+	url := aws.GetPreSignURL(aws.GetR2Client(), "bobobo-test")
+	response.RespData(ctx, map[string]interface{}{
+		"url": url,
+	})
+}
+
 func StartBucket(ctx *gin.Context) {
-	data := bucket.StartBucketV2()
-	//if ctx.GetHeader("Os") == "ios" {
-	//	data = map[string]interface{}{
-	//		"bucket_id":     "2lqxqjg9lnrt1",
-	//		"is_accelerate": false,
-	//	}
-	//}
-	response.RespData(ctx, data)
+	//bucket.GetR2STS(ctx)
+	//data := bucket.StartBucketV2()
+	//response.RespData(ctx, data)
 	return
 }
 
@@ -26,7 +29,7 @@ func GetBucketInfo(ctx *gin.Context) {
 		BucketId string `json:"bucket_id" binding:"required"`
 	}
 	if err := ctx.ShouldBindJSON(&params); err != nil {
-		response.ResErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
 	data, err := bucket.GetBucketInfoByBucketId(params.BucketId)
@@ -41,7 +44,7 @@ func GetBucketInfo(ctx *gin.Context) {
 func GetAwsHeadObjectExists(ctx *gin.Context) {
 	var params GetAwsHeadObjectRequest
 	if err := ctx.ShouldBindJSON(&params); err != nil {
-		response.ResErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
 	res := bucket.GetAwsHeadObjectExists(params)

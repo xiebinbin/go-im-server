@@ -18,7 +18,7 @@ type VerifyParams struct {
 }
 
 func Auth(ctx *gin.Context) {
-	dataHash := ctx.Request.Header.Get("X-Data-Hash")
+	dataHash := ctx.Request.Header.Get(base.HeaderFieldDataHash)
 	if ctx.Request.Method == http.MethodGet {
 		//计算共享密钥
 	}
@@ -47,7 +47,7 @@ func Auth(ctx *gin.Context) {
 	fmt.Println("address----", address)
 	if uInfo.ID == "" {
 		ctx.Abort()
-		response.ResPubErr(ctx, errno.Add("request-err", http.StatusBadRequest))
+		response.ResPubErr(ctx, errno.Add("request-err-x-uid", http.StatusBadRequest))
 		return
 	}
 	fmt.Println("uInfo:", uInfo)

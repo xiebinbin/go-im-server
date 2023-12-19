@@ -14,7 +14,7 @@ const (
 	HeaderFieldReqId     = "req-id"
 	HeaderFieldLang      = "lang"
 	HeaderFieldOs        = "os"
-	HeaderFieldVersion   = "version"
+	HeaderFieldVersion   = "X-Version"
 	HeaderFieldUserAgent = "user-agent"
 	HeaderFieldPubKey    = "X-Pub-Key"
 	HeaderFieldUID       = "X-UID"
