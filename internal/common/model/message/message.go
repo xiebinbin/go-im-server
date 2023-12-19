@@ -161,17 +161,6 @@ func dealReadStatus(ctx context.Context, senderId string, msgContentStr string, 
 	return true
 }
 
-func GetTargetId(chatId, senderId string) string {
-	mIds, _ := members.New().GetChatMemberUIds(chatId)
-	if len(mIds) == 2 {
-		if mIds[0] == senderId {
-			return mIds[1]
-		}
-		return mIds[0]
-	}
-	return ""
-}
-
 func saveMsgDetail(ctx context.Context, params SendMessageParams) (MsgItem, error) {
 	t := funcs.GetMillis()
 	status := params.Status

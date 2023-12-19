@@ -3,7 +3,6 @@ package middlewares
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"imsdk/internal/client/pkg/utils/crypt"
 	walletutil "imsdk/internal/client/pkg/utils/wallet-util"
 	"imsdk/internal/common/dao/user"
 	"imsdk/internal/common/pkg/base"
@@ -69,10 +68,10 @@ func deCrypto(ctx *gin.Context, data, pubKey string) {
 	//data, _ = crypt.En(key, dataByte)
 	//========= DEMO End =========
 	fmt.Println("key:", key)
-	res, _ := crypt.De(key, data)
-	ctx.Set("data", string(res))
+	//res, _ := crypt.De(key, data)
+	//ctx.Set("data", string(res))
 	//res, _ := json.Marshal(data)
-	//ctx.Set("data", data)
+	ctx.Set("data", data)
 }
 
 func getCommonParams(ctx *gin.Context) (string, error) {

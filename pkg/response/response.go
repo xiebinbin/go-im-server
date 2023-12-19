@@ -96,6 +96,7 @@ func RespListData(ctx *gin.Context, data interface{}) {
 	client, _ := walletutil.New(priKey)
 	key, _ := client.GetSharedSecret(pubKey)
 	res, _ := crypt.En(key, byteData)
+	fmt.Println("res:", res)
 	resp := Response{
 		Code: errno.OK,
 		Msg:  "",

@@ -6,6 +6,7 @@ import (
 	"imsdk/internal/common/dao/chat"
 	"imsdk/internal/common/dao/chat/members"
 	"imsdk/internal/common/dao/message/detail"
+	"imsdk/internal/common/dao/user"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/funcs"
 	"imsdk/pkg/log"
@@ -72,6 +73,17 @@ const (
 func GetMemberUIds() ([]string, error) {
 	res := make([]string, 0)
 	return res, nil
+}
+
+func GetTargetId(chatId, senderId string) string {
+	mIds, _ := members.New().GetChatMemberUIds(chatId)
+	if len(mIds) == 2 {
+		if mIds[0] == senderId {
+			return mIds[1]
+		}
+		return mIds[0]
+	}
+	return ""
 }
 
 func DeleteChat(ctx context.Context, request DeleteChatRequest) error {
@@ -147,8 +159,17 @@ func GetMyChat(ctx context.Context, params GetMyChatParams) ([]GetMyChatResponse
 		ChatIds: ids,
 	})
 	var res []GetMyChatResponse
+
 	if len(data) > 0 {
+		targetId := ""
+		uDao := user.New()
 		for _, datum := range data {
+			if datum.Type == chat.TypeSingle {
+				targetId = GetTargetId(datum.ID, params.UId)
+				uInfo, _ := uDao.GetByID(targetId)
+				datum.Avatar = uInfo.Avatar
+				datum.Name = uInfo.Name
+			}
 			res = append(res, GetMyChatResponse{
 				ID:               datum.ID,
 				GId:              datum.GId,
