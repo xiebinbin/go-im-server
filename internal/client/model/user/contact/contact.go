@@ -175,12 +175,12 @@ func UpdateAddress(uid, objUId string, Address []map[string]interface{}) error {
 	return err
 }
 
-func UpdateRemarkText(uid, objUId, remarkText string) error {
+func UpdateRemarkText(uid, objUId, remark string) error {
 	if err := user2.GetUserErr(objUId); err != nil {
 		return err
 	}
 	upData := map[string]interface{}{
-		"remark_text": remarkText,
+		"remark": remark,
 	}
 	modCount, err := contact.New().UpdateRemark(uid, objUId, upData)
 	if modCount <= 0 {

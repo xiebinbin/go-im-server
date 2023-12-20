@@ -17,7 +17,6 @@ func (w *Wallet) GetSharedSecret(hexPubKey string) (string, error) {
 	}
 	pubKeyBytes, err := hexutil.Decode(hexPubKey)
 	if err == nil {
-		fmt.Println("hexPubKey", hexPubKey)
 		x, y := secp256k1.DecompressPubkey(pubKeyBytes)
 		fmt.Println("x", x)
 		pubKey := &ecdsa.PublicKey{
@@ -25,11 +24,11 @@ func (w *Wallet) GetSharedSecret(hexPubKey string) (string, error) {
 			X:     x,
 			Y:     y,
 		}
-		fmt.Println("pubKey", pubKey)
+		//fmt.Println("pubKey", pubKey)
 		SharedSecretX, SharedSecretY := ecc.P256k1().ScalarMult(pubKey.X, pubKey.Y, w.priKey.D.Bytes())
-		fmt.Println("SharedSecretX", SharedSecretX)
+		//fmt.Println("SharedSecretX", SharedSecretX)
 		hexSharedSecret = hexutil.Encode(SharedSecretX.Bytes())[2:] + hexutil.Encode(SharedSecretY.Bytes())[2:]
-		fmt.Println("hexSharedSecret", hexSharedSecret)
+		//fmt.Println("hexSharedSecret", hexSharedSecret)
 	}
 	return hexSharedSecret, err
 }

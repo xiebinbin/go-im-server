@@ -231,7 +231,7 @@ func ProcessOfflineMsg(ctx context.Context, val []byte) error {
 		singapore.Offline(ctx, callBackUrl, singapore.OfflineReqParams{
 			Title:      offlineTitle,
 			Body:       offlineBody,
-			AChatId:    pushParams.ChatInfo.GId,
+			AChatId:    pushParams.ChatInfo.TargetId,
 			SenderId:   senderAId,
 			ReceiveIds: receiveIds,
 			Type:       msgItem.Type,
@@ -543,7 +543,7 @@ func CallBackThirdProviderOffline(ctx context.Context, callbackUrl string, param
 		callbackParams := singapore.CallBackOfflineParams{
 			AMID:       params.Data.Amid,
 			Type:       strconv.Itoa(int(params.Data.Type)),
-			AChatId:    chatInfo.GId,
+			AChatId:    chatInfo.TargetId,
 			Title:      string(singaporeTitle),
 			Body:       string(singaporeBody),
 			ReceiveIds: string(singaporeReceiveIds),

@@ -204,7 +204,10 @@ func saveMsgDetail(ctx context.Context, params SendMessageParams) (MsgItem, erro
 		UpdatedAt:  addData.UpdatedAt,
 		Offline:    params.Offline,
 	}
-
+	// update chat lastTime
+	chat.New().UpMapByID(addData.ChatId, map[string]interface{}{
+		"last_time": funcs.GetMillis(),
+	})
 	return msgItem, nil
 }
 
@@ -226,6 +229,7 @@ func GetMessageList(ctx context.Context, request GetMessageListRequest) []detail
 	if request.Sequence != 0 {
 		where = bson.M{
 			"sequence": bson.M{"$lt": request.Sequence},
+			"chat_id":  request.ChatId,
 		}
 	}
 	data := detail.New().GetListByLimit(limit, where)

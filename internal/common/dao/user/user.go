@@ -15,6 +15,8 @@ type User struct {
 	ID        string `bson:"_id" json:"address"`
 	Avatar    string `bson:"avatar" json:"avatar"`
 	Name      string `bson:"name" json:"name"`
+	Gender    string `bson:"gender" json:"gender"` // 0-未知 1-男 2-女
+	Sign      string `bson:"sign" json:"sign"`
 	PubKey    string `bson:"pub_key" json:"pub_key"`
 	Status    int8   `bson:"status" json:"status"`
 	DBIdx     int64  `bson:"db_idx" json:"db_idx"`
@@ -26,6 +28,8 @@ type ListResponse struct {
 	Avatar string `bson:"avatar" json:"avatar"`
 	Name   string `bson:"name" json:"name"`
 	PubKey string `bson:"pub_key" json:"pub_key"`
+	Gender string `bson:"gender" json:"gender"` // 0-未知 1-男 2-女
+	Sign   string `bson:"sign" json:"sign"`
 }
 
 const (

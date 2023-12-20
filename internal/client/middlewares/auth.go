@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"imsdk/internal/client/pkg/utils/crypt"
 	walletutil "imsdk/internal/client/pkg/utils/wallet-util"
 	"imsdk/internal/common/dao/user"
 	"imsdk/internal/common/pkg/base"
@@ -32,24 +33,24 @@ func Auth(ctx *gin.Context) {
 	time := ctx.Value(base.HeaderFieldTime).(string)
 	sign := ctx.Value(base.HeaderFieldSign).(string)
 	address := ctx.Value(base.HeaderFieldUID).(string)
-	fmt.Println("---", time, sign, dataHash)
-	rel, err := walletutil.VerifySign(dataHash+":"+time, sign, address)
-	if rel == false || err != nil {
-		fmt.Println("sign-auth-err", rel, err)
-		ctx.Abort()
-		response.ResPubErr(ctx, errno.Add("sign-auth-err", http.StatusBadRequest))
-		return
+	//fmt.Println("---", time, sign, dataHash)
+	if ctx.Value(base.HeaderIsEnc).(string) != "false" {
+		rel, err := walletutil.VerifySign(dataHash+":"+time, sign, address)
+		if rel == false || err != nil {
+			fmt.Println("sign-auth-err", rel, err)
+			ctx.Abort()
+			response.ResPubErr(ctx, errno.Add("sign-auth-err", http.StatusBadRequest))
+			return
+		}
 	}
 	pubKey := ctx.Value(base.HeaderFieldPubKey).(string)
 	deCrypto(ctx, data, pubKey)
 	uInfo, _ := user.New().GetByID(address)
-	fmt.Println("address----", address)
 	if uInfo.ID == "" {
 		ctx.Abort()
 		response.ResPubErr(ctx, errno.Add("request-err-x-uid", http.StatusBadRequest))
 		return
 	}
-	fmt.Println("uInfo:", uInfo)
 	ctx.Set("uid", uInfo.ID)
 }
 
@@ -67,11 +68,16 @@ func deCrypto(ctx *gin.Context, data, pubKey string) {
 	//
 	//data, _ = crypt.En(key, dataByte)
 	//========= DEMO End =========
-	fmt.Println("key:", key)
-	//res, _ := crypt.De(key, data)
-	//ctx.Set("data", string(res))
-	//res, _ := json.Marshal(data)
-	ctx.Set("data", data)
+	fmt.Println("ctx.Value(base.HeaderIsEnc)", ctx.Value(base.HeaderIsEnc))
+	if ctx.Value(base.HeaderIsEnc).(string) == "false" {
+		ctx.Set("data", data)
+		return
+	}
+
+	res, _ := crypt.De(key, data)
+	fmt.Println("req data:", string(res))
+	ctx.Set("data", string(res))
+	/*res, _ := json.Marshal(data)*/
 }
 
 func getCommonParams(ctx *gin.Context) (string, error) {

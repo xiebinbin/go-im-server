@@ -53,6 +53,11 @@ func CheckHeaders(ctx *gin.Context) {
 		lang = "en"
 	}
 
+	isEnc := ctx.Request.Header.Get(base.HeaderIsEnc)
+	if isEnc == sdk.EmptyString {
+		isEnc = ""
+	}
+
 	ctx.Set(base.HeaderFieldTime, time)
 	ctx.Set(base.HeaderFieldSign, sign)
 	ctx.Set(base.HeaderFieldPubKey, pubKey)
@@ -62,6 +67,7 @@ func CheckHeaders(ctx *gin.Context) {
 	ctx.Set(base.HeaderFieldUserAgent, userAgent)
 	ctx.Set(base.HeaderFieldDeviceId, deviceId)
 	ctx.Set(base.HeaderFieldLang, lang)
+	ctx.Set(base.HeaderIsEnc, isEnc)
 
 	//os := strings.ToLower(ctx.Request.Header.Get(base.HeaderFieldOs))
 }

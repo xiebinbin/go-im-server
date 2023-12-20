@@ -65,6 +65,26 @@ func UpdateName(ctx context.Context, request UpdateNameRequest) error {
 	return nil
 }
 
+func UpdateGender(ctx context.Context, uid string, request UpdateGenderRequest) error {
+	err := user.New().Update(uid, user.User{
+		Gender: request.Gender,
+	})
+	if err != nil {
+		return errno.Add("sys-err", errno.SysErr)
+	}
+	return nil
+}
+
+func UpdateSign(ctx context.Context, uid string, request UpdateSignRequest) error {
+	err := user.New().Update(uid, user.User{
+		Sign: request.Sign,
+	})
+	if err != nil {
+		return errno.Add("sys-err", errno.SysErr)
+	}
+	return nil
+}
+
 func UpdateAvatar(ctx context.Context, request UpdateAvatarRequest) error {
 	uid := ctx.Value(base.HeaderFieldUID).(string)
 	err := user.New().Update(uid, user.User{

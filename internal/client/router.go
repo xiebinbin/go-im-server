@@ -37,6 +37,8 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/user/getBatchInfo", user.GetListInfo)
 	engine.POST("/user/updateName", user.UpdateName)
 	engine.POST("/user/updateAvatar", user.UpdateAvatar)
+	engine.POST("/user/updateGender", user.UpdateGender)
+	engine.POST("/user/updateSign", user.UpdateSign)
 
 	engine.POST("/auth/appScanLoginQrCode", user.AppScanLoginQrCode)
 	engine.POST("/auth/appConfirmLogin", user.AppConfirmLogin)
@@ -56,6 +58,7 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/friend/inviteReject", contacts.Refuse)
 	engine.POST("/friend/inviteRead", contacts.ReadApplyFriends)
 	engine.POST("/friend/list", contacts.GetFriendList)
+	engine.POST("/friend/updateRemark", contacts.UpdateRemark)
 	engine.POST("/friend/relationList", contacts.GetRelationList)
 	engine.POST("/friend/deleteUnilateral", contacts.DelFriendsUnilateral)
 	engine.POST("/friend/deleteBilateral", contacts.DelFriendsBilateral)

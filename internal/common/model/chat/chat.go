@@ -17,6 +17,7 @@ type CreateParams struct {
 	Id       string    `json:"id"`
 	Creator  string    `json:"creator"`
 	OwnerUid string    `json:"owner_uid"`
+	TargetId string    `json:"target_id"`
 	UIds     []string  `json:"address_list"`
 	Type     chat.Type `json:"type"`
 	Name     string    `json:"name"`
@@ -52,7 +53,7 @@ type GetChatResponse struct {
 
 type GetMyChatResponse struct {
 	ID               string    `bson:"_id" json:"id"`
-	GId              string    `bson:"gid" json:"group_id"`
+	TargetId         string    `bson:"target_id" json:"target_id"`
 	CreatorUId       string    `bson:"creator" json:"creator,omitempty"`
 	OwnerUId         string    `bson:"owner" json:"owner,omitempty"`
 	Name             string    `bson:"name" json:"name"`
@@ -119,6 +120,7 @@ func Create(ctx context.Context, params CreateParams) (CreateResp, error) {
 		CreatorUId: creator,
 		OwnerUId:   ownerUid,
 		Name:       params.Name,
+		TargetId:   params.TargetId,
 		Total:      int64(len(allMemDupIds)),
 		Type:       chatType,
 		Avatar:     params.Avatar,
@@ -158,21 +160,25 @@ func GetMyChat(ctx context.Context, params GetMyChatParams) ([]GetMyChatResponse
 	data, _ := GetChatList(ctx, GetChatParams{
 		ChatIds: ids,
 	})
-	var res []GetMyChatResponse
+	res := make([]GetMyChatResponse, 0)
 
 	if len(data) > 0 {
-		targetId := ""
 		uDao := user.New()
 		for _, datum := range data {
+			targetId := datum.TargetId
 			if datum.Type == chat.TypeSingle {
 				targetId = GetTargetId(datum.ID, params.UId)
+				//targetId = datum.TargetId
 				uInfo, _ := uDao.GetByID(targetId)
 				datum.Avatar = uInfo.Avatar
 				datum.Name = uInfo.Name
 			}
+			if datum.LastTime == 0 {
+				datum.LastTime = datum.CreatedAt
+			}
 			res = append(res, GetMyChatResponse{
 				ID:               datum.ID,
-				GId:              datum.GId,
+				TargetId:         targetId,
 				OwnerUId:         datum.OwnerUId,
 				Avatar:           datum.Avatar,
 				Name:             datum.Name,
@@ -201,7 +207,7 @@ func GetIdListByUid(uid string) ([]string, error) {
 
 func GetChatList(ctx context.Context, params GetChatParams) ([]chat.Chat, error) {
 	//var err error
-	res, err := chat.New().GetInfoByIds(params.ChatIds, "_id,name,avatar,type,last_read_number, last_number, last_time")
+	res, err := chat.New().GetInfoByIds(params.ChatIds, "_id,name,avatar,type,target_id,last_read_number, create_time,last_number, last_time")
 	if err != nil {
 		return []chat.Chat{}, nil
 	}

@@ -17,3 +17,11 @@ type UpdateNameRequest struct {
 type UpdateAvatarRequest struct {
 	Avatar string `json:"avatar" binding:"required"`
 }
+
+type UpdateGenderRequest struct {
+	Gender string `json:"gender" binding:"required"`
+}
+
+type UpdateSignRequest struct {
+	Sign string `json:"sign" binding:"required"`
+}

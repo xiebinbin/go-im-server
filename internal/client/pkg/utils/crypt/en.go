@@ -10,7 +10,6 @@ import (
 )
 
 func En(key string, data []byte) (string, error) {
-
 	var rel string
 	var err error
 	if len(key) == 0 {

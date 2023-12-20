@@ -95,17 +95,6 @@ func (a Apply) Delete(id string) error {
 	return err
 }
 
-func (a Apply) GetApplyLists(uid string) ([]Apply, error) {
-	var data []Apply
-	fields := "_id,uid,remark,status"
-	where := bson.M{"obj_uid": uid}
-	err := a.Collection().Fields(dao.GetMongoFieldsBsonByString(fields)).Where(where).FindMany(&data)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-
 func (a Apply) GetApplyInfo(address, objAddress string) (Apply, error) {
 	where := bson.M{"obj_uid": objAddress, "uid": address}
 	var data Apply
@@ -134,4 +123,20 @@ func (a Apply) UpdateInfoByIds(ids []string, uData map[string]interface{}) error
 	where := bson.M{"_id": bson.M{"$in": ids}}
 	_, err := a.Collection().Where(where).UpdateMany(uData)
 	return err
+}
+
+func (a Apply) GetApplyLists(uid string) ([]Apply, error) {
+	var data []Apply
+	fields := "_id,obj_uid,uid,remark,status,create_time"
+	where := bson.M{
+		"$or": []bson.M{
+			{"obj_uid": uid},
+			{"uid": uid},
+		},
+	}
+	err := a.Collection().Fields(dao.GetMongoFieldsBsonByString(fields)).Where(where).FindMany(&data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

@@ -48,8 +48,11 @@ func GetContactsIds(ctx *gin.Context) {
 
 func GetFriendList(ctx *gin.Context) {
 	userId, _ := ctx.Value(base.HeaderFieldUID).(string)
-	data := friend.GetFriendLists(ctx, userId)
-	response.RespListData(ctx, data)
+	var params friend.ListFriendsRequest
+	data, _ := ctx.Get("data")
+	json.Unmarshal([]byte(data.(string)), &params)
+	res := friend.GetFriendLists(ctx, userId, params)
+	response.RespListData(ctx, res)
 	return
 }
 
@@ -81,6 +84,20 @@ func DelFriendsBilateral(ctx *gin.Context) {
 	if len(params.UIDs) == 0 {
 		err = friend.DelAllBilateral(ctx, uid)
 	}
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
+func UpdateRemark(ctx *gin.Context) {
+	var params friend.UpdateRemarkRequest
+	data, _ := ctx.Get("data")
+	json.Unmarshal([]byte(data.(string)), &params)
+	uid, _ := ctx.Get(base.HeaderFieldUID)
+	err := friend.UpdateRemark(ctx, uid.(string), params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return
@@ -148,69 +165,3 @@ func GetContactsListInfo(ctx *gin.Context) {
 	response.ResData(ctx, resData)
 	return
 }
-
-//func GetContactsListInfo(ctx *gin.Context) {
-//	userId, _ := ctx.Get("uid")
-//	uid := userId.(string)
-//	var params InfoRequest
-//	if err := ctx.ShouldBindJSON(&params); err != nil {
-//		response.ResErr(ctx, errno.Add("params-err", errno.ParamsErr))
-//		return
-//	}
-//	params.Ids = user.GetValidUIds(params.Ids)
-//	resData := make([]InfoResponse, 0)
-//	if len(params.Ids) == 0 {
-//		response.ResData(ctx, resData)
-//		return
-//	}
-//	friendsData := friend.GetFriendsDetail(uid, params.Ids)
-//	contactsData := contact.GetContactsDetail(uid, params.Ids)
-//	tmp := make(map[string]interface{}, 0)
-//	tmpContact := make(map[string]interface{}, 0)
-//	if friendsData != nil {
-//		for _, v := range friendsData {
-//			tmp[v.ObjUId] = v
-//		}
-//	}
-//	if contactsData != nil {
-//		for _, v := range contactsData {
-//			tmpContact[v.ObjUId] = v
-//		}
-//	}
-//	for _, v := range params.Ids {
-//		res := InfoResponse{
-//			ID:     uid,
-//			ObjUID: v,
-//			Phone:  []string{},
-//			Tag:    []map[string]interface{}{},
-//		}
-//		if tmpContact[v] != nil {
-//			c := tmpContact[v].(contact2.Contact)
-//			res.Alias = c.Alias
-//			res.RemarkText = c.RemarkText
-//			res.RemarkImg = c.RemarkImg
-//			res.Phones = c.Phones
-//			res.Relations = c.Relations
-//			res.Emails = c.Emails
-//			res.Dates = c.Dates
-//			res.Companies = c.Companies
-//			res.Schools = c.Schools
-//			res.Address = c.Address
-//			res.Phone = strings.Split(c.Phone, ",")
-//			if c.Tag != "" {
-//				tagTmp, _ := tag.New().GetTagInfo(strings.Split(c.Tag, ","))
-//				res.Tag = tagTmp
-//			}
-//		}
-//
-//		friendInfo := tmp[v]
-//		if friendInfo != nil {
-//			info := friendInfo.(friend2.Friend)
-//			res.IsStar = info.IsStar
-//			res.FromWay = info.FromWay
-//		}
-//		resData = append(resData, res)
-//	}
-//	response.ResData(ctx, resData)
-//	return
-//}

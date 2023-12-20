@@ -46,9 +46,10 @@ type RefuseRequest struct {
 
 type ApplyListResponse struct {
 	ID        string `bson:"_id" json:"id,omitempty"`
+	ObjUId    string `bson:"obj_uid" json:"obj_uid,omitempty"`
 	UId       string `bson:"uid" json:"uid,omitempty"`
 	Remark    string `bson:"remark" json:"remark,omitempty"`
-	Status    int8   `bson:"status" json:"status,omitempty"`
+	Status    int8   `bson:"status" json:"status"`
 	IsRead    int8   `bson:"is_read" json:"is_read,omitempty"`
 	Avatar    string `bson:"avatar" json:"avatar"`
 	Name      string `bson:"name" json:"name"`
@@ -146,6 +147,7 @@ func GetApplyLists(ctx context.Context) ([]ApplyListResponse, error) {
 	if len(data) > 0 {
 		for _, datum := range data {
 			uIds = append(uIds, datum.UId)
+			uIds = append(uIds, datum.ObjUId)
 		}
 	}
 	res := make([]ApplyListResponse, 0)
@@ -154,15 +156,25 @@ func GetApplyLists(ctx context.Context) ([]ApplyListResponse, error) {
 		return res, err
 	}
 	for _, datum := range data {
+		var Name string
+		var Avatar string
+		if uid == datum.UId {
+			Name = uInfo[datum.ObjUId].Name
+			Avatar = uInfo[datum.ObjUId].Avatar
+		} else {
+			Name = uInfo[datum.UId].Name
+			Avatar = uInfo[datum.UId].Avatar
+		}
 		res = append(res, ApplyListResponse{
 			ID:        datum.ID,
+			ObjUId:    datum.ObjUId,
 			UId:       datum.UId,
 			Remark:    datum.Remark,
 			CreatedAt: datum.CreatedAt,
 			Status:    datum.Status,
 			IsRead:    datum.IsRead,
-			Name:      uInfo[datum.UId].Name,
-			Avatar:    uInfo[datum.UId].Avatar,
+			Name:      Name,
+			Avatar:    Avatar,
 		})
 	}
 	return res, err
@@ -206,8 +218,9 @@ func AgreeApply(ctx context.Context, request AgreeRequest) error {
 	}
 	// Garbage demand
 	_, err = chat.Create(ctx, chat.CreateParams{
-		Creator: uid,
-		UIds:    []string{applyInfo.UId, uid},
+		Creator:  uid,
+		TargetId: applyInfo.UId,
+		UIds:     []string{applyInfo.UId, uid},
 	})
 	if err != nil {
 		return err

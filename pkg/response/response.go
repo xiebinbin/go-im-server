@@ -96,11 +96,15 @@ func RespListData(ctx *gin.Context, data interface{}) {
 	client, _ := walletutil.New(priKey)
 	key, _ := client.GetSharedSecret(pubKey)
 	res, _ := crypt.En(key, byteData)
-	fmt.Println("res:", res)
 	resp := Response{
 		Code: errno.OK,
 		Msg:  "",
 		Data: res,
+	}
+	if ctx.Value(base.HeaderIsEnc).(string) == "false" {
+		resp.Data = data
+		response(ctx, resp)
+		return
 	}
 	response(ctx, resp)
 	return
@@ -127,8 +131,14 @@ func RespData(ctx *gin.Context, data interface{}) {
 	resp := Response{
 		Code: errno.OK,
 		Msg:  "",
-		Data: res,
+		Data: data,
 	}
+	if ctx.Value(base.HeaderIsEnc).(string) == "false" {
+		resp.Data = data
+		response(ctx, resp)
+		return
+	}
+	resp.Data = res
 	response(ctx, resp)
 	return
 }

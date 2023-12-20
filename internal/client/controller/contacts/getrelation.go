@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/model/friend"
+	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/response"
 )
 
@@ -14,7 +15,7 @@ type RelationRequest struct {
 //type ApplyRequest = contacts.ApplyRequest
 
 func GetRelationList(ctx *gin.Context) {
-	userId, _ := ctx.Get("uid")
+	userId, _ := ctx.Get(base.HeaderFieldUID)
 	uid := userId.(string)
 	var params RelationRequest
 	data, _ := ctx.Get("data")

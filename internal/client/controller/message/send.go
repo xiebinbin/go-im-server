@@ -17,7 +17,7 @@ func SendMessage(ctx *gin.Context) {
 	var params message.SendMessageParams
 	data, _ := ctx.Get("data")
 	err := json.Unmarshal([]byte(data.(string)), &params)
-	uid, _ := ctx.Get("uid")
+	uid, _ := ctx.Get(base.HeaderFieldUID)
 	params.SenderId = uid.(string)
 	resp, err := message.Send(ctx, params)
 	log.Logger().Info(logCtx, "send message duration: time :  ", time.Now().Sub(t1))

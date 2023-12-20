@@ -27,6 +27,8 @@ type GetFriendListsResponse struct {
 	PubKey string `json:"pub_key"`
 	Avatar string `json:"avatar"`
 	Name   string `json:"name"`
+	Gender string `json:"gender"`
+	Sign   string `json:"sign"`
 }
 
 func GetFriendsIds(uid string) []string {
@@ -34,8 +36,8 @@ func GetFriendsIds(uid string) []string {
 	return data
 }
 
-func GetFriendLists(ctx context.Context, uid string) []GetFriendListsResponse {
-	uIds, remarkInfo, _ := friend2.New().GetFriendInfos(uid)
+func GetFriendLists(ctx context.Context, uid string, request ListFriendsRequest) []GetFriendListsResponse {
+	uIds, remarkInfo, _ := friend2.New().GetFriendInfos(uid, request.UIds)
 	uInfos, _ := user.New().GetByIDs(uIds)
 	res := make([]GetFriendListsResponse, 0)
 	for _, datum := range uInfos {
@@ -46,6 +48,8 @@ func GetFriendLists(ctx context.Context, uid string) []GetFriendListsResponse {
 			PubKey: datum.PubKey,
 			Avatar: datum.Avatar,
 			Name:   datum.Name,
+			Gender: datum.Gender,
+			Sign:   datum.Sign,
 		})
 	}
 	return res
@@ -89,6 +93,8 @@ func GetRelationInfo(uid string, ids []string) []GetRelationInfoResponse {
 			u, _ := dao.GetInfoById(v.ID)
 			v.Name = u.Name
 			v.Avatar = u.Avatar
+			v.Gender = u.Gender
+			v.Sign = u.Sign
 			res = append(res, v)
 		}
 		//mineBlockIds, _ := block.New().GetMineBlockedIds(uid, ids)
@@ -131,6 +137,14 @@ func DelFriendsBilateral(ctx context.Context, uid string, request DeleteFriendsR
 
 func DelAllBilateral(ctx context.Context, uid string) error {
 	err := friend2.New().DelAllBilateral(uid)
+	return err
+}
+
+func UpdateRemark(ctx context.Context, uid string, request UpdateRemarkRequest) error {
+	upData := map[string]interface{}{
+		"remark": request.Remark,
+	}
+	_, err := friend2.New().UpdateRemark(uid, request.Remark, upData)
 	return err
 }
 

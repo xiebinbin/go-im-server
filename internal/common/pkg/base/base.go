@@ -20,6 +20,7 @@ const (
 	HeaderFieldUID       = "X-UID"
 	HeaderFieldSign      = "X-Sign"
 	HeaderFieldTime      = "X-Time"
+	HeaderIsEnc          = "X-ENC"
 	HeaderFieldDataHash  = "X-Data-Hash"
 
 	TypeUser            = "im:login:user:"

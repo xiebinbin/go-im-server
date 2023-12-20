@@ -44,7 +44,7 @@ func New() *Contact {
 	return new(Contact)
 }
 
-func (c Contact) TableName() string {
+func (c *Contact) TableName() string {
 	return "user_contact"
 }
 func GetId(uid, objId string) string {
@@ -59,7 +59,7 @@ func (c *Contact) Collection(mode ...mongo.Mode) *mongo.CollectionInfo {
 	return mongo.Database().SetTable(c.TableName(), rpMode)
 }
 
-func (c Contact) GetContactsInfo(uid string, targetIds []string) (data []Contact, err error) {
+func (c *Contact) GetContactsInfo(uid string, targetIds []string) (data []Contact, err error) {
 	ids := make([]string, 0)
 	for _, id := range targetIds {
 		ids = append(ids, GetId(uid, id))
@@ -69,20 +69,20 @@ func (c Contact) GetContactsInfo(uid string, targetIds []string) (data []Contact
 	return
 }
 
-func (c Contact) UpdateRemark(uid, objUId string, upData map[string]interface{}) (int64, error) {
+func (c *Contact) UpdateRemark(uid, objUId string, upData map[string]interface{}) (int64, error) {
 	id := GetId(uid, objUId)
 	where := bson.M{"_id": id}
 	res, err := c.Collection().Where(where).UpdateOne(&upData)
 	return res.MatchedCount, err
 }
 
-func (c Contact) UpdateById(id string, upData map[string]interface{}) (int64, error) {
+func (c *Contact) UpdateById(id string, upData map[string]interface{}) (int64, error) {
 	where := bson.M{"_id": id}
 	res, err := c.Collection().Where(where).UpdateOne(&upData)
 	return res.MatchedCount, err
 }
 
-func (c Contact) AddRemark(addData map[string]interface{}) (string, error) {
+func (c *Contact) AddRemark(addData map[string]interface{}) (string, error) {
 	res, err := c.Collection().InsertOne(addData)
 	if err != nil {
 		return "", err
@@ -90,7 +90,7 @@ func (c Contact) AddRemark(addData map[string]interface{}) (string, error) {
 	return res.InsertedID.(string), nil
 }
 
-func (c Contact) GetAlias(uid, objUId string) string {
+func (c *Contact) GetAlias(uid, objUId string) string {
 	var data Contact
 	id := GetId(uid, objUId)
 	where := bson.M{"_id": id}
@@ -98,14 +98,14 @@ func (c Contact) GetAlias(uid, objUId string) string {
 	return data.Alias
 }
 
-func (c Contact) GetByIds(ids []string) []Contact {
+func (c *Contact) GetByIds(ids []string) []Contact {
 	var data []Contact
 	where := bson.M{"_id": bson.M{"$in": ids}}
 	c.Collection(mongo.SecondaryPreferredMode).Where(where).FindMany(&data)
 	return data
 }
 
-func (c Contact) GetAllLists() []Contact {
+func (c *Contact) GetAllLists() []Contact {
 	var data []Contact
 	where := bson.M{}
 	c.Collection(mongo.SecondaryPreferredMode).Where(where).FindMany(&data)

@@ -1,9 +1,13 @@
 package contacts
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/model/friend"
+	"imsdk/internal/common/dao/friendv2/apply"
+	user2 "imsdk/internal/common/dao/user"
+	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
 )
@@ -71,4 +75,44 @@ func Refuse(ctx *gin.Context) {
 		response.RespErr(ctx, err)
 	}
 	return
+}
+
+func GetApplyLists(ctx context.Context) ([]friend.ApplyListResponse, error) {
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	data, err := apply.New().GetApplyLists(uid)
+	var uIds []string
+	if len(data) > 0 {
+		for _, datum := range data {
+			uIds = append(uIds, datum.UId)
+			uIds = append(uIds, datum.ObjUId)
+		}
+	}
+	res := make([]friend.ApplyListResponse, 0)
+	uInfo, _ := user2.New().GetInfoByIds(uIds)
+	if err != nil {
+		return res, err
+	}
+	for _, datum := range data {
+		var Name string
+		var Avatar string
+		if uid == datum.UId {
+			Name = uInfo[datum.ObjUId].Name
+			Avatar = uInfo[datum.ObjUId].Avatar
+		} else {
+			Name = uInfo[datum.UId].Name
+			Avatar = uInfo[datum.UId].Avatar
+		}
+		res = append(res, friend.ApplyListResponse{
+			ID:        datum.ID,
+			ObjUId:    datum.ObjUId,
+			UId:       datum.UId,
+			Remark:    datum.Remark,
+			CreatedAt: datum.CreatedAt,
+			Status:    datum.Status,
+			IsRead:    datum.IsRead,
+			Name:      Name,
+			Avatar:    Avatar,
+		})
+	}
+	return res, err
 }

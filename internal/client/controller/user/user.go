@@ -31,7 +31,7 @@ func GetListInfo(ctx *gin.Context) {
 		response.RespErr(ctx, err)
 		return
 	}
-	response.ResData(ctx, list)
+	response.RespListData(ctx, list)
 	return
 }
 
@@ -40,6 +40,34 @@ func UpdateName(ctx *gin.Context) {
 	data, _ := ctx.Get("data")
 	json.Unmarshal([]byte(data.(string)), &params)
 	err := user.UpdateName(ctx, params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
+func UpdateGender(ctx *gin.Context) {
+	var params user.UpdateGenderRequest
+	data, _ := ctx.Get("data")
+	json.Unmarshal([]byte(data.(string)), &params)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	err := user.UpdateGender(ctx, uid, params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
+func UpdateSign(ctx *gin.Context) {
+	var params user.UpdateSignRequest
+	data, _ := ctx.Get("data")
+	json.Unmarshal([]byte(data.(string)), &params)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	err := user.UpdateSign(ctx, uid, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return

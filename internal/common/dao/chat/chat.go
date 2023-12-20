@@ -15,7 +15,7 @@ import (
 type Type = int8
 type Chat struct {
 	ID               string         `bson:"_id" json:"id"`
-	GId              string         `bson:"gid" json:"group_id"`
+	TargetId         string         `bson:"target_id" json:"target_id"`
 	CreatorUId       string         `bson:"creator" json:"creator,omitempty"`
 	OwnerUId         string         `bson:"owner" json:"owner,omitempty"`
 	Name             string         `bson:"name" json:"name"`
@@ -123,7 +123,7 @@ func (c *Chat) GetAChatIdByIds(Ids []string) (map[string]string, error) {
 		return nil, err
 	}
 	for _, v := range data {
-		result[v.ID] = v.GId
+		result[v.ID] = v.TargetId
 	}
 	return result, nil
 }
@@ -136,7 +136,7 @@ func (c *Chat) GetIdByAChatIds(AChatIds []string) (map[string]string, error) {
 		return nil, err
 	}
 	for _, v := range data {
-		result[v.GId] = v.ID
+		result[v.TargetId] = v.ID
 	}
 	return result, nil
 }
