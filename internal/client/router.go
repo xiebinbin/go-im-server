@@ -49,8 +49,12 @@ func GetEngine(engine *gin.Engine) {
 
 	engine.POST("/message/send", message.SendMessage)
 	engine.POST("/message/list", message.GetMessageByChatId)
-	engine.POST("/message/batchDelete", message.BatchDelete)
-	engine.POST("/message/deleteAll", message.DeleteAll)
+	engine.POST("/message/deleteBatch", message.DeleteBatch)
+	engine.POST("/message/deleteSelfAll", message.DeleteAllByUID)
+	engine.POST("/message/deleteAllByChatIds", message.DeleteAllByChatIds)
+	engine.POST("/message/deleteSelfByChatIds", message.DeleteSelfByChatIds)
+	engine.POST("/message/revokeBatch", message.RevokeBatch)
+	engine.POST("/message/revokeByChatIds", message.RevokeByChatIds)
 
 	engine.POST("/friend/inviteApply", contacts.Apply)
 	engine.POST("/friend/inviteList", contacts.GetList)

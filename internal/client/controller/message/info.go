@@ -32,18 +32,48 @@ func GetMessageByChatId(ctx *gin.Context) {
 	return
 }
 
-func DeleteAll(ctx *gin.Context) {
-	uid := ctx.Value(base.HeaderFieldUID)
-	data := message.DeleteByUID(ctx, uid.(string))
+func DeleteAllByUID(ctx *gin.Context) {
+	var params message.DeleteByUIDRequest
+	params.UID = ctx.Value(base.HeaderFieldUID).(string)
+	data := message.DeleteByUID(ctx, params)
 	response.RespListData(ctx, data)
 	return
 }
 
-func BatchDelete(ctx *gin.Context) {
+func DeleteBatch(ctx *gin.Context) {
 	var params message.BatchDeleteRequest
 	data, _ := ctx.Get("data")
 	json.Unmarshal([]byte(data.(string)), &params)
-	err := message.BatchDelete(ctx, params.Ids)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	err := message.DeleteBatch(ctx, uid, params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
+func DeleteAllByChatIds(ctx *gin.Context) {
+	var params message.DeleteByChatIdsRequest
+	data, _ := ctx.Get("data")
+	json.Unmarshal([]byte(data.(string)), &params)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	err := message.DeleteAllByChatIds(ctx, uid, params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
+func DeleteSelfByChatIds(ctx *gin.Context) {
+	var params message.DeleteByChatIdsRequest
+	data, _ := ctx.Get("data")
+	json.Unmarshal([]byte(data.(string)), &params)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	err := message.DeleteSelfByChatIds(ctx, uid, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return

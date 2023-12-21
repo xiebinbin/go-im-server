@@ -38,8 +38,11 @@ func GetFriendsIds(uid string) []string {
 
 func GetFriendLists(ctx context.Context, uid string, request ListFriendsRequest) []GetFriendListsResponse {
 	uIds, remarkInfo, _ := friend2.New().GetFriendInfos(uid, request.UIds)
-	uInfos, _ := user.New().GetByIDs(uIds)
 	res := make([]GetFriendListsResponse, 0)
+	if len(uIds) == 0 {
+		return res
+	}
+	uInfos, _ := user.New().GetByIDs(uIds)
 	for _, datum := range uInfos {
 		res = append(res, GetFriendListsResponse{
 			UId:    datum.ID,

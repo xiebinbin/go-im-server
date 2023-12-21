@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/errno"
@@ -68,6 +69,6 @@ func CheckHeaders(ctx *gin.Context) {
 	ctx.Set(base.HeaderFieldDeviceId, deviceId)
 	ctx.Set(base.HeaderFieldLang, lang)
 	ctx.Set(base.HeaderIsEnc, isEnc)
-
+	fmt.Println("req headers:", uid, sign, pubKey)
 	//os := strings.ToLower(ctx.Request.Header.Get(base.HeaderFieldOs))
 }

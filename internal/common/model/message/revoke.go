@@ -23,8 +23,8 @@ type RevokeParams struct {
 type RevokeByChatIdsParams struct {
 	ChatIds    []string `json:"chat_ids" binding:"required"`
 	ExceptMIds []string `json:"except_mids"`
-	UID        string   `json:"uid"`
 	Os         string   `json:"os"`
+	UID        string   `json:"uid"`
 }
 
 func Revoke(ctx *gin.Context, params RevokeParams) ([]string, bool) {
@@ -69,8 +69,8 @@ func Revoke(ctx *gin.Context, params RevokeParams) ([]string, bool) {
 	return undoIds, false
 }
 
-func RevokeByChatIds(ctx *gin.Context, params RevokeByChatIdsParams) ([]string, error) {
-	msgInfo := detail.New().GetExceptByChatIdAndSenderId(params.UID, params.ChatIds, params.ExceptMIds, "_id")
+func RevokeByChatIds(ctx *gin.Context, uid string, params RevokeByChatIdsParams) ([]string, error) {
+	msgInfo := detail.New().GetExceptByChatIdAndSenderId(uid, params.ChatIds, params.ExceptMIds, "_id")
 	undoIds := make([]string, 0)
 	if len(msgInfo) == 0 {
 		return undoIds, nil
@@ -78,12 +78,12 @@ func RevokeByChatIds(ctx *gin.Context, params RevokeByChatIdsParams) ([]string, 
 	for _, v := range msgInfo {
 		undoIds = append(undoIds, v.ID)
 	}
-	_, err := detail.New().Delete(params.UID, undoIds)
+	_, err := detail.New().Delete(uid, undoIds)
 	logCtx := log.WithFields(ctx, map[string]string{"action": "RevokeByChatIds"})
 	log.Logger().Error(logCtx, "RevokeByChatIds err:", err, params)
 	if err == nil {
 		sysMsgData := map[string]interface{}{
-			"operator":    params.UID,
+			"operator":    uid,
 			"target":      []string{},
 			"temId":       "revoke-msg-all",
 			"chat_id":     params.ChatIds,
@@ -91,7 +91,7 @@ func RevokeByChatIds(ctx *gin.Context, params RevokeByChatIdsParams) ([]string, 
 		}
 		contentByte, _ := json.Marshal(sysMsgData)
 		data := SendMessageParams{
-			Mid:     funcs.CreateMsgId(params.UID),
+			Mid:     funcs.CreateMsgId(uid),
 			Type:    base.MsgContentTypeHollowDel,
 			ChatId:  params.ChatIds[0],
 			Content: string(contentByte),

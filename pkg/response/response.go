@@ -89,7 +89,7 @@ func RespListData(ctx *gin.Context, data interface{}) {
 		"items": data,
 	}
 	a, _ := json.Marshal(enData)
-	fmt.Println("RespListData----", string(a))
+	fmt.Println("RespData----", string(a))
 	byteData, _ := json.Marshal(enData)
 	pubKey := ctx.Value(base.HeaderFieldPubKey).(string)
 	priKey, _ := config.GetConfigSk()

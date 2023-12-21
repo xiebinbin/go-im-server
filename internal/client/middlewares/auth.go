@@ -1,8 +1,10 @@
 package middlewares
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/client/pkg/utils/crypt"
 	walletutil "imsdk/internal/client/pkg/utils/wallet-util"
 	"imsdk/internal/common/dao/user"
@@ -33,7 +35,7 @@ func Auth(ctx *gin.Context) {
 	time := ctx.Value(base.HeaderFieldTime).(string)
 	sign := ctx.Value(base.HeaderFieldSign).(string)
 	address := ctx.Value(base.HeaderFieldUID).(string)
-	//fmt.Println("---", time, sign, dataHash)
+	fmt.Println("---", time, sign, dataHash)
 	if ctx.Value(base.HeaderIsEnc).(string) != "false" {
 		rel, err := walletutil.VerifySign(dataHash+":"+time, sign, address)
 		if rel == false || err != nil {
@@ -45,8 +47,9 @@ func Auth(ctx *gin.Context) {
 	}
 	pubKey := ctx.Value(base.HeaderFieldPubKey).(string)
 	deCrypto(ctx, data, pubKey)
-	uInfo, _ := user.New().GetByID(address)
-	if uInfo.ID == "" {
+	uInfo, err := user.New().GetByID(address)
+	fmt.Println("err:", err, address)
+	if uInfo.ID == "" || errors.Is(err, mongo.ErrNoDocuments) {
 		ctx.Abort()
 		response.ResPubErr(ctx, errno.Add("request-err-x-uid", http.StatusBadRequest))
 		return

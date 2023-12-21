@@ -86,7 +86,7 @@ func (f *Friend) GetFriendInfos(uid string, objUIds []string) ([]string, map[str
 	if len(objUIds) != 0 {
 		where["obj_uid"] = bson.M{"$in": objUIds}
 	}
-	err := f.Collection().Where(where).Fields(bson.M{"obj_uid": 1}).FindMany(&data)
+	err := f.Collection().Where(where).Fields(bson.M{"obj_uid": 1}).Sort(bson.M{"update_time": -1}).FindMany(&data)
 	if err != nil {
 		return nil, nil, err
 	}

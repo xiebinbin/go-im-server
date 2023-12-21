@@ -176,7 +176,7 @@ func (u *User) Delete(uid string, ids []string) (int64, error) {
 	uData := map[string]interface{}{
 		"status": StatusDelete,
 	}
-	where := bson.M{"_id": bson.M{"$in": ids}}
+	where := bson.M{"uid": uid, "mid": bson.M{"$in": ids}}
 	res, err := u.getCollection(uid).Where(where).UpdateMany(&uData)
 	return res.ModifiedCount, err
 }

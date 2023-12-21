@@ -22,56 +22,6 @@ import (
 	"imsdk/pkg/log"
 )
 
-const (
-	HandleUndo     = "undo"
-	HandleUndoMany = "undo-many"
-)
-
-type SendMessageParams struct {
-	Mid           string                 `json:"mid"`
-	ChatId        string                 `json:"chat_id"`
-	SenderId      string                 `json:"from_uid"`
-	ReceiveIds    []string               `json:"receive_ids"`
-	Status        int8                   `json:"status"`
-	Type          int8                   `json:"type"`
-	Content       base.JsonString        `json:"content"`
-	Extra         base.JsonString        `json:"extra"`
-	Offline       map[string]interface{} `json:"offline"`
-	NoIncrUnread  bool                   `json:"no_incr_unread"`  // business message (server send)
-	AppCtx        string                 `json:"app_ctx"`         // business message (server send)
-	NoPushOffline bool                   `json:"no_push_offline"` // business message (server send)
-}
-
-type SendMessageParamsTemp struct {
-	Mid        string          `json:"mid"`
-	Type       int8            `json:"type" binding:"required"`
-	Content    base.JsonString `json:"content" binding:"required"`
-	CreateTime int64           `json:"create_time" binding:"required"`
-}
-
-type GetMessageListRequest struct {
-	Limit    int64  `json:"limit"`
-	ChatId   string `json:"chat_id"`
-	Sequence int64  `json:"sequence"`
-}
-
-type BatchDeleteRequest struct {
-	Ids []string `json:"ids" binding:"required"`
-}
-
-type UserMessageIdsParams struct {
-	Sequence int64 `json:"sequence" binding:"gte=0"`
-}
-
-type SendResp struct {
-	Sequence    int64  `json:"sequence"`
-	ID          string `json:"id"`
-	FromAddress string `json:"from_uid"`
-	Content     string `json:"content"`
-	Type        int8   `json:"type"`
-	CreateTime  int64  `json:"create_time"`
-}
-
 func Send(ctx context.Context, params SendMessageParams) (SendResp, error) {
 	resp := SendResp{Sequence: 0}
 	deData := []byte(ctx.Value("data").(string))
@@ -225,28 +175,72 @@ func GetMsgInfo(ctx context.Context, msgIds []string) []detail.Detail {
 
 func GetMessageList(ctx context.Context, request GetMessageListRequest) []detail.GetMessageListResponse {
 	limit := request.Limit
-	where := bson.M{}
+	where := bson.M{"chat_id": request.ChatId, "status": bson.M{"$ne": detail.StatusDelete}}
 	if request.Sequence != 0 {
-		where = bson.M{
-			"sequence": bson.M{"$lt": request.Sequence},
-			"chat_id":  request.ChatId,
+		where["sequence"] = bson.M{"$lt": request.Sequence}
+		if request.Direction == DirectionDown {
+			where["sequence"] = bson.M{"$gt": request.Sequence}
 		}
 	}
 	data := detail.New().GetListByLimit(limit, where)
 	return data
 }
 
-func BatchDelete(ctx context.Context, ids []string) error {
-	_, err := detail.New().DeleteByIds(ids)
-	if err == nil {
+func DeleteBatch(ctx context.Context, uid string, request BatchDeleteRequest) error {
+	_, err := detail.New().DeleteByIds(request.Ids)
+	if err != nil {
+		return err
+	}
+	_, err = usermessage.New().Delete(uid, request.Ids)
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func DeleteByUID(ctx context.Context, uid string) error {
-	_, err := detail.New().DeleteByUID(uid)
+func RevokeBatch(ctx context.Context, uid string, request RevokeBatchRequest) error {
+	_, err := detail.New().DeleteByIds(request.Ids)
+	if err != nil {
+		return err
+	}
+	_, err = usermessage.New().Delete(uid, request.Ids)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteAllByChatIds(ctx context.Context, uid string, request DeleteByChatIdsRequest) error {
+	_, err := detail.New().DeleteByChatIds(uid, request.ChatIds)
+	if err != nil {
+		return err
+	}
+	_, err = usermessage.New().DeleteSelfMsgInChatIds(uid, request.ChatIds, []string{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteSelfByChatIds(ctx context.Context, uid string, request DeleteByChatIdsRequest) error {
+	_, err := detail.New().DeleteByChatIds(uid, request.ChatIds)
+	if err != nil {
+		return err
+	}
+	_, err = usermessage.New().DeleteSelfMsgInChatIds(uid, request.ChatIds, []string{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteByUID(ctx context.Context, request DeleteByUIDRequest) error {
+	_, err := detail.New().DeleteByUID(request.UID)
 	if err == nil {
+		return err
+	}
+	_, err = usermessage.New().DeleteSelfAll(request.UID)
+	if err != nil {
 		return err
 	}
 	return nil
@@ -260,43 +254,30 @@ func DeleteSelfByIds(uid string, ids []string) bool {
 	return false
 }
 
-func DeleteSelfByChatIds(uid string, chatIds, exceptIds []string) bool {
-	msgInfo := detail.New().GetExceptByChatIds(chatIds, exceptIds, "_id")
-	var msgIds []string
-	if len(msgInfo) > 0 {
-		for _, v := range msgInfo {
-			msgIds = append(msgIds, v.ID)
-		}
-		_, err := usermessage.New().Delete(uid, msgIds)
-		if err != nil {
-			return false
-		}
-	}
-
-	if len(chatIds) > 0 {
-		chatId := chatIds[0]
-		_ = AddPrepareMsgByStatus(context.Background(), AddPrepareMsgByStatusReq{
-			ChatId:   chatId,
-			SenderId: uid,
-			MIds:     exceptIds,
-			Tag:      TagDelete,
-		})
-	}
-	return true
-}
-
-const (
-	TagDelete = 1
-	TagRevoke = 2
-)
-
-type AddPrepareMsgByStatusReq struct {
-	ChatId   string   `json:"chat_id"`
-	SenderId string   `json:"sender_id"`
-	MIds     []string `json:"mids"`
-	Status   int8     `json:"status"`
-	Tag      int8     `json:"tag"`
-}
+//func DeleteSelfByChatIds(uid string, chatIds, exceptIds []string) bool {
+//	msgInfo := detail.New().GetExceptByChatIds(chatIds, exceptIds, "_id")
+//	var msgIds []string
+//	if len(msgInfo) > 0 {
+//		for _, v := range msgInfo {
+//			msgIds = append(msgIds, v.ID)
+//		}
+//		_, err := usermessage.New().Delete(uid, msgIds)
+//		if err != nil {
+//			return false
+//		}
+//	}
+//
+//	if len(chatIds) > 0 {
+//		chatId := chatIds[0]
+//		_ = AddPrepareMsgByStatus(context.Background(), AddPrepareMsgByStatusReq{
+//			ChatId:   chatId,
+//			SenderId: uid,
+//			MIds:     exceptIds,
+//			Tag:      TagDelete,
+//		})
+//	}
+//	return true
+//}
 
 func AddPrepareMsgByStatus(ctx context.Context, params AddPrepareMsgByStatusReq) error {
 	logCtx := log.WithFields(context.Background(), map[string]string{"action": "DeleteChat"})

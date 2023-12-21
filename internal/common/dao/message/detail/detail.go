@@ -161,7 +161,7 @@ func (d *Detail) GetDetailByChatIdAndSenderId(senderId string, chatIds []string,
 
 func (d *Detail) GetExceptByChatIdAndSenderId(senderId string, chatIds, exceptIds []string, fields string) []Detail {
 	data := make([]Detail, 0)
-	where := bson.M{"chat_id": bson.M{"$in": chatIds}, "sender_id": senderId, "status": StatusYes, "_id": bson.M{"$nin": exceptIds}}
+	where := bson.M{"chat_id": bson.M{"$in": chatIds}, "from_id": senderId, "status": StatusYes, "_id": bson.M{"$nin": exceptIds}}
 	err := d.collection(mongo.SecondaryPreferredMode).
 		Fields(dao.GetMongoFieldsBsonByString(fields)).Where(where).FindMany(&data)
 	fmt.Println("get message detail list: ", len(chatIds), " ", err)
@@ -179,14 +179,25 @@ func (d *Detail) Delete(uid string, ids []string) (int64, error) {
 	return res.ModifiedCount, err
 }
 
+func (d *Detail) DeleteByChatIds(uid string, ids []string) (int64, error) {
+	uData := map[string]interface{}{
+		"status":      StatusDelete,
+		"content":     "",
+		"update_time": funcs.GetMillis(),
+	}
+	where := bson.M{"_id": bson.M{"$in": ids}, "sender_id": uid}
+	res, err := d.collection().Where(where).UpdateMany(uData)
+	return res.ModifiedCount, err
+}
+
 func (d *Detail) DeleteMyByChatIds(uid string, chatIds []string) (int64, error) {
-	where := bson.M{"chat_id": bson.M{"$in": chatIds}, "sender_id": uid}
+	where := bson.M{"chat_id": bson.M{"$in": chatIds}, "from_uid": uid}
 	res, err := d.collection().Where(where).Delete()
 	return res, err
 }
 
 func (d *Detail) DeleteByUID(uid string) (int64, error) {
-	where := bson.M{"sender_id": uid}
+	where := bson.M{"from_uid": uid}
 	res, err := d.collection().Where(where).Delete()
 	return res, err
 }

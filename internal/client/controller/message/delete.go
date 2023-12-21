@@ -1,6 +1,7 @@
 package message
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"imsdk/internal/common/model/message"
 	"imsdk/internal/common/pkg/base"
@@ -36,7 +37,7 @@ func DelSelf(ctx *gin.Context) {
 }
 
 func DelSelfByChatIds(ctx *gin.Context) {
-	var params DelSelfByChatRequest
+	var params message.DeleteByChatIdsRequest
 	userId, _ := ctx.Get("uid")
 	uid := userId.(string)
 	defErr := errno.Add("params-err", errno.ParamsErr)
@@ -44,11 +45,25 @@ func DelSelfByChatIds(ctx *gin.Context) {
 		response.RespErr(ctx, defErr)
 		return
 	}
-	if message.DeleteSelfByChatIds(uid, params.ChatIds, params.ExceptMIds) {
+	if err := message.DeleteSelfByChatIds(ctx, uid, params); err != nil {
 		response.RespSuc(ctx)
 		return
 	}
 	response.RespErr(ctx, defErr)
+	return
+}
+
+func RevokeBatch(ctx *gin.Context) {
+	var params message.RevokeBatchRequest
+	data, _ := ctx.Get("data")
+	json.Unmarshal([]byte(data.(string)), &params)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	err := message.RevokeBatch(ctx, uid, params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
 	return
 }
 
@@ -66,15 +81,12 @@ func DelSelfAll(ctx *gin.Context) {
 
 func RevokeByChatIds(ctx *gin.Context) {
 	var params message.RevokeByChatIdsParams
-	userId, _ := ctx.Get("uid")
-	defErr := errno.Add("params-err", errno.ParamsErr)
-	if err := ctx.ShouldBindJSON(&params); err != nil {
-		response.RespErr(ctx, defErr)
-		return
-	}
+	userId := ctx.Value(base.HeaderFieldUID)
+	data, _ := ctx.Get("data")
+	json.Unmarshal([]byte(data.(string)), &params)
 	//os := funcs.GetHeaders(ctx)["Device-Id"][0]
 	deviceId := ctx.Value(base.HeaderFieldDeviceId).(string)
-	_, err := message.RevokeByChatIds(ctx, message.RevokeByChatIdsParams{
+	_, err := message.RevokeByChatIds(ctx, userId.(string), message.RevokeByChatIdsParams{
 		ChatIds:    params.ChatIds,
 		ExceptMIds: params.ExceptMIds,
 		UID:        userId.(string),
