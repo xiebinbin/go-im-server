@@ -54,12 +54,12 @@ func DeleteBatch(ctx *gin.Context) {
 	return
 }
 
-func DeleteAllByChatIds(ctx *gin.Context) {
+func DeleteBatchByChatIds(ctx *gin.Context) {
 	var params message.DeleteByChatIdsRequest
 	data, _ := ctx.Get("data")
 	json.Unmarshal([]byte(data.(string)), &params)
 	uid := ctx.Value(base.HeaderFieldUID).(string)
-	err := message.DeleteAllByChatIds(ctx, uid, params)
+	err := message.DeleteBatchByChatIds(ctx, uid, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return

@@ -7,8 +7,10 @@ type IdRequest struct {
 type IdsRequest struct {
 	GroupIDs []string `json:"ids" binding:"required"`
 }
-type ListRequest struct {
-	GroupIDs []string `json:"ids"`
+
+type ClearMessageRequest struct {
+	GroupID string   `json:"id" binding:"required"`
+	MIds    []string `json:"mids"`
 }
 
 type MembersRequest struct {
@@ -86,8 +88,4 @@ type TransferRequest struct {
 type GetNoticeRequest struct {
 	GroupID  string `json:"id" binding:"required"`
 	NoticeID string `json:"notice_id"`
-}
-
-type DisbandRequest struct {
-	GroupID string `json:"id" binding:"required"`
 }

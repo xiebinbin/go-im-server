@@ -39,6 +39,7 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/user/updateAvatar", user.UpdateAvatar)
 	engine.POST("/user/updateGender", user.UpdateGender)
 	engine.POST("/user/updateSign", user.UpdateSign)
+	engine.POST("/user/unsubscribe", user.Unsubscribe)
 
 	engine.POST("/auth/appScanLoginQrCode", user.AppScanLoginQrCode)
 	engine.POST("/auth/appConfirmLogin", user.AppConfirmLogin)
@@ -51,7 +52,7 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/message/list", message.GetMessageByChatId)
 	engine.POST("/message/deleteBatch", message.DeleteBatch)
 	engine.POST("/message/deleteSelfAll", message.DeleteAllByUID)
-	engine.POST("/message/deleteAllByChatIds", message.DeleteAllByChatIds)
+	engine.POST("/message/deleteBatchByChatIds", message.DeleteBatchByChatIds)
 	engine.POST("/message/deleteSelfByChatIds", message.DeleteSelfByChatIds)
 	engine.POST("/message/revokeBatch", message.RevokeBatch)
 	engine.POST("/message/revokeByChatIds", message.RevokeByChatIds)
@@ -64,8 +65,8 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/friend/list", contacts.GetFriendList)
 	engine.POST("/friend/updateRemark", contacts.UpdateRemark)
 	engine.POST("/friend/relationList", contacts.GetRelationList)
-	engine.POST("/friend/deleteUnilateral", contacts.DelFriendsUnilateral)
-	engine.POST("/friend/deleteBilateral", contacts.DelFriendsBilateral)
+	engine.POST("/friend/deleteUnilateral", contacts.DelFriendsUnilateral) //单向删除好友
+	engine.POST("/friend/deleteBilateral", contacts.DelFriendsBilateral)   //双向删除
 
 	engine.POST("/member/info", user.GetListInfo)
 
@@ -87,6 +88,9 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/group/transfer", group.Transfer)
 	engine.POST("/group/addAdministrators", group.AddAdministrators)
 	engine.POST("/group/removeAdministrators", group.RemoveAdministrators)
+	engine.POST("/group/clearMessage", group.ClearMessage)
+	engine.POST("/group/applyList", group.ApplyList)
+	engine.POST("/group/detailByIds", group.DetailByIds)
 
 	//engine.POST("/sendCmd", common.SendCmd)
 	engine.POST("/getChatMemberIds", chat.GetMemberIds)

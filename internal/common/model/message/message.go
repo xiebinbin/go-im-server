@@ -210,7 +210,7 @@ func RevokeBatch(ctx context.Context, uid string, request RevokeBatchRequest) er
 	return nil
 }
 
-func DeleteAllByChatIds(ctx context.Context, uid string, request DeleteByChatIdsRequest) error {
+func DeleteBatchByChatIds(ctx context.Context, uid string, request DeleteByChatIdsRequest) error {
 	_, err := detail.New().DeleteByChatIds(uid, request.ChatIds)
 	if err != nil {
 		return err

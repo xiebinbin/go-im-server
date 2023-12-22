@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/model/group"
 	"imsdk/internal/common/dao/group/members"
+	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
 )
@@ -82,7 +83,7 @@ func AgreeJoin(ctx *gin.Context) {
 }
 
 func GetList(ctx *gin.Context) {
-	var params group.ListRequest
+	var params group.IdsRequest
 	userId, _ := ctx.Get("uid")
 	data, _ := ctx.Get("data")
 	err := json.Unmarshal([]byte(data.(string)), &params)
@@ -212,7 +213,7 @@ func Transfer(ctx *gin.Context) {
 }
 
 func Disband(ctx *gin.Context) {
-	var params group.DisbandRequest
+	var params group.IdRequest
 	userId, _ := ctx.Get("uid")
 	data, _ := ctx.Get("data")
 	err := json.Unmarshal([]byte(data.(string)), &params)
@@ -229,6 +230,46 @@ func Disband(ctx *gin.Context) {
 	return
 }
 
+func ClearMessage(ctx *gin.Context) {
+	var params group.ClearMessageRequest
+	fmt.Println(params)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	fmt.Println("Unsubscribe uid:", uid)
+	var err error
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
+func ApplyList(ctx *gin.Context) {
+	var params group.IdRequest
+	fmt.Println(params)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	fmt.Println("Unsubscribe uid:", uid)
+	var err error
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
+func DetailByIds(ctx *gin.Context) {
+	var params group.IdsRequest
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	fmt.Println("GetDetail uid:", uid, params)
+	var err error
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
 func GetQrCode(ctx *gin.Context) {
 	var params struct {
 		GroupID string `json:"id" binding:"required"`

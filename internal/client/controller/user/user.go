@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/model/user"
 	"imsdk/internal/common/pkg/base"
@@ -83,6 +84,18 @@ func UpdateAvatar(ctx *gin.Context) {
 		return
 	}
 	err := user.UpdateAvatar(ctx, params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
+func Unsubscribe(ctx *gin.Context) {
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	fmt.Println("Unsubscribe uid:", uid)
+	var err error
 	if err != nil {
 		response.RespErr(ctx, err)
 		return

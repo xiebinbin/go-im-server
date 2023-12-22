@@ -565,7 +565,7 @@ func UpdateAlias(ctx context.Context, uid string, request UpdateAliasRequest) er
 	return errno.Add("fail", errno.DefErr)
 }
 
-func GetListByUid(ctx context.Context, uid string, request ListRequest) ([]members.MyGroupRes, error) {
+func GetListByUid(ctx context.Context, uid string, request IdsRequest) ([]members.MyGroupRes, error) {
 	return members.New().GetMyGroupList(uid, request.GroupIDs)
 }
 
@@ -670,7 +670,7 @@ func KickOutGroup(ctx context.Context, uid string, request KickOutRequest) error
 	return nil
 }
 
-func DisbandGroup(ctx context.Context, uid string, request DisbandRequest) error {
+func DisbandGroup(ctx context.Context, uid string, request IdRequest) error {
 	_, err := verifyGroupAndIsAdministrator(uid, request.GroupID, true)
 	if err != nil {
 		return err
