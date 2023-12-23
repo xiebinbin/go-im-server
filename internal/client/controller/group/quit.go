@@ -26,6 +26,24 @@ func Quit(ctx *gin.Context) {
 	return
 }
 
+func QuitByIds(ctx *gin.Context) {
+	var params group.QuitByIdsRequest
+	userId, _ := ctx.Get("uid")
+	data, _ := ctx.Get("data")
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	if err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
+	err = group.QuitByIds(ctx, userId.(string), params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
 func QuitAll(ctx *gin.Context) {
 	var params group.QuitAllRequest
 	userId, _ := ctx.Get("uid")

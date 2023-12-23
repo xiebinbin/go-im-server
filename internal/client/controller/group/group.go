@@ -46,6 +46,24 @@ func GetMembersInfo(ctx *gin.Context) {
 	return
 }
 
+func GetMembersByIds(ctx *gin.Context) {
+	var params group.GetMembersByIdsRequest
+	data, _ := ctx.Get("data")
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	if err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
+	userId, _ := ctx.Get("uid")
+	res, er := group.GetMembersByIds(ctx, userId.(string), params)
+	if er != nil {
+		response.RespErr(ctx, er)
+		return
+	}
+	response.RespListData(ctx, res)
+	return
+}
+
 func Join(ctx *gin.Context) {
 	var params group.JoinRequest
 	userId, _ := ctx.Get("uid")

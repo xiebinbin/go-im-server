@@ -17,6 +17,7 @@ type Members struct {
 	ID        string `bson:"_id" json:"id"`
 	GroupID   string `bson:"gid" json:"gid,omitempty"`
 	UID       string `bson:"uid" json:"uid,omitempty"`
+	EncKey    string `bson:"enc_key" json:"enc_key,omitempty"`
 	InviteUID string `bson:"invite_uid" json:"invite_uid,omitempty"`
 	Role      uint8  `bson:"role" json:"role,omitempty"`
 	JoinType  uint8  `bson:"join_type" json:"join_type,omitempty"`
@@ -220,6 +221,16 @@ func (m Members) GetMyGroupIdList(uid string) ([]GroupIDsRes, error) {
 	return res, nil
 }
 
+func (m Members) GetMyGroupByIds(uid string, ids []string) ([]GroupIDsRes, error) {
+	res := make([]GroupIDsRes, 0)
+	where := bson.M{
+		"uid": uid,
+		"gid": bson.M{"$in": ids},
+	}
+	m.collection(mongo.SecondaryPreferredMode).Where(where).Fields(bson.M{"gid": 1}).FindMany(&res)
+	return res, nil
+}
+
 func (m Members) GetGroupMemberIds(gid string) ([]GroupUIDsRes, error) {
 	res := make([]GroupUIDsRes, 0)
 	m.collection(mongo.SecondaryPreferredMode).Where(bson.M{"gid": gid}).Fields(bson.M{"uid": 1}).FindMany(&res)
@@ -236,6 +247,20 @@ func (m Members) GetMembersInfo(gid string, uids []string) ([]GroupMembersInfoRe
 	data := make([]GroupMembersInfoRes, 0)
 	fields := dao.GetMongoFieldsBsonByString("_id,uid,gid,role,my_alias,admin_time,create_time")
 	where := bson.M{"gid": gid}
+	if len(uids) != 0 {
+		where["uid"] = bson.M{"$in": uids}
+	}
+	err := m.collection(mongo.SecondaryPreferredMode).Where(where).Fields(fields).FindMany(&data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (m Members) GetMembersByIds(gids, uids []string) ([]GroupMembersInfoRes, error) {
+	data := make([]GroupMembersInfoRes, 0)
+	fields := dao.GetMongoFieldsBsonByString("_id,uid,gid,role,my_alias,admin_time,create_time")
+	where := bson.M{"gid": bson.M{"$in": gids}}
 	if len(uids) != 0 {
 		where["uid"] = bson.M{"$in": uids}
 	}

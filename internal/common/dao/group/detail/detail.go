@@ -13,17 +13,20 @@ import (
 )
 
 type Detail struct {
-	ID         string `bson:"_id" json:"id"`
-	CreatorUid string `bson:"creator_uid" json:"creator_uid,omitempty"`
-	OwnerUid   string `bson:"owner_uid" json:"owner_uid,omitempty"`
-	Name       string `bson:"name" json:"name,omitempty"`
-	Notice     string `bson:"notice" json:"notice,omitempty"`
-	NoticeId   string `bson:"notice_id" json:"notice_id,omitempty"`
-	Avatar     string `bson:"avatar" json:"avatar,omitempty"`
-	Status     int8   `bson:"status" json:"status,omitempty"`
-	Total      int    `bson:"total" json:"total,omitempty"`
-	CreatedAt  int64  `bson:"create_time" json:"create_time,omitempty"`
-	UpdatedAt  int64  `bson:"update_time" json:"update_time,omitempty"`
+	ID          string `bson:"_id" json:"id"`
+	Creator     string `bson:"creator" json:"creator,omitempty"`
+	Owner       string `bson:"owner" json:"owner,omitempty"`
+	Name        string `bson:"name" json:"name,omitempty"`
+	Notice      string `bson:"notice" json:"notice,omitempty"`
+	NoticeId    string `bson:"notice_md5" json:"notice_md5,omitempty"`
+	Desc        string `bson:"desc" json:"desc,omitempty"`
+	DescMd5     string `bson:"desc_md5" json:"desc_md5,omitempty"`
+	Avatar      string `bson:"avatar" json:"avatar,omitempty"`
+	Status      int8   `bson:"status" json:"status,omitempty"`
+	Total       int    `bson:"total" json:"total,omitempty"`
+	MemberLimit int    `bson:"member_limit" json:"member_limit,omitempty"`
+	CreatedAt   int64  `bson:"create_time" json:"create_time,omitempty"`
+	UpdatedAt   int64  `bson:"update_time" json:"update_time,omitempty"`
 }
 
 const (
@@ -50,7 +53,7 @@ func (d Detail) Collection(mode ...mongo.Mode) *mongo.CollectionInfo {
 }
 
 func (d Detail) Add(data Detail) error {
-	data.OwnerUid = data.CreatorUid
+	data.Owner = data.Creator
 	data.Status = StatusYes
 	_, err := d.Collection().InsertOne(&data)
 	return err

@@ -18,9 +18,19 @@ type MembersRequest struct {
 	ObjUid  []string `json:"obj_uid"`
 }
 
+type GetMembersByIdsRequest struct {
+	GroupIds []string `json:"ids" binding:"required"`
+	ObjUid   []string `json:"obj_uid"`
+}
+
 type QuitRequest struct {
 	GroupID   string `json:"id" binding:"required"`
 	IsDelChat int    `json:"is_del_chat"`
+}
+
+type QuitByIdsRequest struct {
+	GroupIds  []string `json:"ids" binding:"required"`
+	IsDelChat int      `json:"is_del_chat"`
 }
 
 type QuitAllRequest struct {
@@ -87,5 +97,15 @@ type TransferRequest struct {
 
 type GetNoticeRequest struct {
 	GroupID  string `json:"id" binding:"required"`
-	NoticeID string `json:"notice_id"`
+	NoticeID string `json:"notice_md5"`
+}
+
+type UpdateDescRequest struct {
+	GroupID string `json:"id" binding:"required"`
+	Desc    string `json:"desc"`
+}
+
+type GetDescRequest struct {
+	GroupID string `json:"id" binding:"required"`
+	DescMd5 string `json:"desc_md5"`
 }

@@ -1377,6 +1377,40 @@
 }
 ```
 
+#### 退出群聊（指定多个）
+
+**请求URL：**
+
+- `/group/quitByIds`
+
+**请求方式：**
+
+- POST
+
+**接口请求参数说明**
+
+| 参数名 | 类型       | 说明   |
+|:----|:---------|:-----|
+| ids | []string | 群Ids |
+
+**请求Demo**
+
+```
+{
+	"id": ["test001","test002"]
+}
+```
+
+**接口响应**
+
+```
+{
+    "code": 200,
+    "data": null,
+    "msg": ""
+}
+```
+
 #### 退出群聊（所有）
 
 **请求URL：**
@@ -1424,7 +1458,7 @@
 {
 	"id": "test001",
 	"notice": "miyayayayayayay",
-	"notice_id": "aaaaaaaa",
+	"notice_md5": "aaaaaaaa",
 }
 ```
 
@@ -1438,7 +1472,7 @@
 }
 ```
 
-#### 修改群通告
+#### 获取群通告
 
 **请求URL：**
 
@@ -1466,9 +1500,81 @@
 
 ```
 {
+	"id": "test001",
+	"notice": "miyayayayayayay",
+	"notice_md5": "aaaaaaaa",
+}
+```
+
+#### 修改群简介
+
+**请求URL：**
+
+- `/group/updateDesc`
+
+**请求方式：**
+
+- POST
+
+**接口请求参数说明**
+
+| 参数名      | 类型     | 说明              |
+|:---------|:-------|:----------------|
+| id       | string | 群ID             |
+| desc     | string | 群简介             |
+| desc_md5 | string | 群简介Id md5(desc) |
+
+**请求Demo**
+
+```
+{
+	"id": "test001",
+	"desc": "miyayayayayayay",
+	"desc_md5": "aaaaaaaa",
+}
+```
+
+**接口响应**
+
+```
+{
     "code": 200,
     "data": null,
     "msg": ""
+}
+```
+
+#### 获取群简介
+
+**请求URL：**
+
+- `/group/getDesc`
+
+**请求方式：**
+
+- POST
+
+**接口请求参数说明**
+
+| 参数名 | 类型     | 说明  |
+|:----|:-------|:----|
+| id  | string | 群ID |
+
+**请求Demo**
+
+```
+{
+	"id": "test001",
+}
+```
+
+**接口响应**
+
+```
+{
+	"id": "test001",
+	"desc": "miyayayayayayay",
+	"desc_md5": "aaaaaaaa",
 }
 ```
 
@@ -1476,7 +1582,7 @@
 
 **请求URL：**
 
-- `/group/disband`
+- `/group/dismiss`
 
 **请求方式：**
 
@@ -1546,7 +1652,7 @@
 
 **请求URL：**
 
-- `/group/addAdministrators`
+- `/group/addAdmin`
 
 **请求方式：**
 
@@ -1732,14 +1838,16 @@
 
 **接口响应参数说明**
 
-| 参数名         | 类型     | 说明       |
-|:------------|:-------|:---------|
-| id          | string | 主键ID     |
-| uid         | string | 用户id（地址） |
-| gid         | string | 群id      |
-| name        | int8   | 群昵称      |
-| avatar      | string | 群头像      |
-| create_time | int64  | 创建时间     |
+| 参数名          | 类型     | 说明       |
+|:-------------|:-------|:---------|
+| id           | string | 主键ID     |
+| uid          | string | 用户id（地址） |
+| gid          | string | 群id      |
+| name         | int8   | 群昵称      |
+| avatar       | string | 群头像      |
+| create_time  | int64  | 创建时间     |
+| member_limit | int64  | 群人数限制    |
+| total        | int64  | 当前人数     |
 
 **接口响应**
 
@@ -1754,7 +1862,9 @@
                 "uid": "0x7f90fadd2e3fdbacfd3ffc0c554fcf5878cc1601",
                 "name": "test001",
                 "avatar": "",
-                "create_time": 1696839147569
+                "create_time": 1696839147569,
+                "member_limit": 100,
+                "total": 2
             }
         ],
         "status": 0

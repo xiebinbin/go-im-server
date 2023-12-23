@@ -24,6 +24,7 @@ type CreateRequest struct {
 	Id      string   `json:"id" binding:"required"`
 	Avatar  string   `json:"avatar"`
 	PubKey  string   `json:"pub_key"`
+	EncKey  string   `json:"enc_key"`
 	Name    string   `json:"name" binding:"required,gt=3,lte=64"`
 	Members []string `json:"members" binding:"required"`
 }
@@ -57,17 +58,16 @@ func Create(ctx context.Context, uid string, params CreateRequest) (err error) {
 	copy(allMemIds, params.Members)
 	allMemIds = append(allMemIds, uid)
 	allMemIds = funcs.RemoveDuplicatesAndEmpty(allMemIds)
-
 	// save group detail data
 	groupDetail := detail.Detail{
-		ID:         params.Id,
-		CreatorUid: uid,
-		OwnerUid:   uid,
-		Name:       params.Name,
-		Avatar:     params.Avatar,
-		Total:      len(allMemIds),
-		CreatedAt:  t,
-		UpdatedAt:  t,
+		ID:        params.Id,
+		Creator:   uid,
+		Owner:     uid,
+		Name:      params.Name,
+		Avatar:    params.Avatar,
+		Total:     len(allMemIds),
+		CreatedAt: t,
+		UpdatedAt: t,
 	}
 	if len(allMemIds) < 3 {
 		return errno.Add("Group of at least 3 user", errno.MissingParams)
@@ -88,6 +88,7 @@ func Create(ctx context.Context, uid string, params CreateRequest) (err error) {
 			ID:        membersDao.GetId(u, params.Id),
 			GroupID:   params.Id,
 			UID:       u,
+			EncKey:    params.EncKey,
 			Role:      members.RoleCommonMember,
 			JoinType:  members.JoinTypeInvite,
 			InviteUID: uid,
@@ -150,6 +151,25 @@ func Create(ctx context.Context, uid string, params CreateRequest) (err error) {
 
 func QuitAllGroup(ctx context.Context, uid string, request QuitAllRequest) error {
 	data, err := members.New().GetMyGroupIdList(uid)
+	if err != nil {
+		return errno.Add("sys-err", errno.SysErr)
+	}
+	if len(data) > 0 {
+		for _, datum := range data {
+			err = QuitGroup(ctx, uid, QuitRequest{
+				GroupID:   datum.ID,
+				IsDelChat: request.IsDelChat,
+			})
+			if err != nil {
+				return errno.Add("sys-err", errno.SysErr)
+			}
+		}
+	}
+	return nil
+}
+
+func QuitByIds(ctx context.Context, uid string, request QuitByIdsRequest) error {
+	data, err := members.New().GetMyGroupByIds(uid, request.GroupIds)
 	if err != nil {
 		return errno.Add("sys-err", errno.SysErr)
 	}
@@ -487,13 +507,13 @@ func UpdateNotice(ctx context.Context, uid string, request UpdateNoticeRequest) 
 	if err != nil {
 		return err
 	}
-	noticeId := funcs.SHA1(request.Notice)
+	noticeId := funcs.Md5Str(request.Notice)
 	if strings.Trim(request.Notice, "") == "" {
 		request.Notice = ""
 	}
 	uData := map[string]interface{}{
 		"notice":      request.Notice,
-		"notice_id":   noticeId,
+		"notice_md5":  noticeId,
 		"update_time": funcs.GetMillis(),
 	}
 	if err = detail.New().UpMapByID(groupInfo.ID, uData); err != nil {
@@ -529,14 +549,74 @@ func GetNotice(uid string, request GetNoticeRequest) (map[string]interface{}, er
 		return res, err
 	}
 	res = map[string]interface{}{
-		"id":        request.GroupID,
-		"notice_id": data.NoticeId,
-		"notice":    "",
-		"is_update": 0,
+		"id":         request.GroupID,
+		"notice_md5": data.NoticeId,
+		"notice":     data.Notice[0:200],
+		"is_update":  0,
 	}
 	if data.NoticeId != request.NoticeID {
-		res["notice"] = data.Notice
-		res["notice_id"] = data.NoticeId
+		res["notice"] = data.Notice[0:200]
+		res["notice_md5"] = data.NoticeId
+		res["is_update"] = 1
+	}
+	return res, err
+}
+
+func UpdateDesc(ctx context.Context, uid string, request UpdateDescRequest) error {
+	groupInfo, err := verifyGroupAndIsAdministrator(uid, request.GroupID, true)
+	if err != nil {
+		return err
+	}
+	descId := funcs.Md5Str(request.Desc)
+	if strings.Trim(request.Desc, "") == "" {
+		request.Desc = ""
+	}
+	uData := map[string]interface{}{
+		"desc":        request.Desc,
+		"desc_md5":    descId,
+		"update_time": funcs.GetMillis(),
+	}
+	if err = detail.New().UpMapByID(groupInfo.ID, uData); err != nil {
+		return err
+	}
+
+	//changelogs.New().UpdateGroupInfo(request.GID)
+
+	if request.Desc == "" {
+		return nil
+	}
+	//sysMsgData := map[string]interface{}{
+	//	"operator": uid,
+	//	"target":   []string{},
+	//	"temId":    "mod-group-notice",
+	//}
+	//actionData := map[string]interface{}{}
+	//// todo should use queue and must be send successfully
+	//err = message.HollowManSendGroupSystemMsg(gid, sysMsgData, actionData)
+	//if err != nil {
+	//	return err
+	//}
+	return nil
+}
+
+func GetDesc(ctx context.Context, uid string, request GetDescRequest) (map[string]interface{}, error) {
+	res := make(map[string]interface{})
+	if !members.New().IsExist(uid, request.GroupID) {
+		return res, errno.Add("forbidden", errno.FORBIDDEN)
+	}
+	data, err := detail.New().GetByID(request.GroupID, "_id,notice_id,notice")
+	if err != nil {
+		return res, err
+	}
+	res = map[string]interface{}{
+		"id":        request.GroupID,
+		"desc_md5":  data.NoticeId,
+		"desc":      data.Notice[0:200],
+		"is_update": 0,
+	}
+	if data.DescMd5 != request.DescMd5 {
+		res["desc"] = data.Notice[0:200]
+		res["desc_md5"] = data.NoticeId
 		res["is_update"] = 1
 	}
 	return res, err
@@ -583,6 +663,10 @@ func GetIdListByUid(uid string) ([]string, error) {
 
 func GetMembersInfo(ctx context.Context, uid string, request MembersRequest) ([]members.GroupMembersInfoRes, error) {
 	return members.New().GetMembersInfo(request.GroupID, request.ObjUid)
+}
+
+func GetMembersByIds(ctx context.Context, uid string, request GetMembersByIdsRequest) ([]members.GroupMembersInfoRes, error) {
+	return members.New().GetMembersByIds(request.GroupIds, request.ObjUid)
 }
 
 func KickOutGroup(ctx context.Context, uid string, request KickOutRequest) error {
@@ -816,7 +900,7 @@ func TransferGroup(ctx context.Context, uid string, request TransferRequest) err
 	}
 	millis := funcs.GetMillis()
 	uData := detail.Detail{
-		OwnerUid:  request.ObjUId,
+		Owner:     request.ObjUId,
 		UpdatedAt: millis,
 	}
 	if err = detail.New().UpByID(request.GroupID, uData); err != nil {
