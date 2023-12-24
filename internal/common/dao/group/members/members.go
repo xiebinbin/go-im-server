@@ -17,6 +17,7 @@ type Members struct {
 	ID        string `bson:"_id" json:"id"`
 	GroupID   string `bson:"gid" json:"gid,omitempty"`
 	UID       string `bson:"uid" json:"uid,omitempty"`
+	EncPri    string `bson:"enc_pri" json:"enc_pri,omitempty"`
 	EncKey    string `bson:"enc_key" json:"enc_key,omitempty"`
 	InviteUID string `bson:"invite_uid" json:"invite_uid,omitempty"`
 	Role      uint8  `bson:"role" json:"role,omitempty"`
@@ -29,11 +30,13 @@ type Members struct {
 }
 
 type MyGroupRes struct {
-	ID        string `json:"id"`
-	UID       string `json:"uid"`
-	Avatar    string `json:"avatar"`
-	Name      string `json:"name"`
-	CreatedAt int64  `json:"create_time"`
+	ID        string `bson:"_id" json:"id"`
+	UID       string `bson:"uid" json:"uid"`
+	Avatar    string `bson:"avatar" json:"avatar,omitempty"`
+	Name      string `bson:"name" json:"name,omitempty"`
+	EncKey    string `bson:"enc_key" json:"enc_key"`
+	Status    int8   `bson:"status" json:"status"`
+	CreatedAt int64  `bson:"created_at" json:"create_time"`
 }
 
 type GroupIDsRes struct {
@@ -49,15 +52,31 @@ type GroupMembersInfoRes struct {
 	UID      string `bson:"uid" json:"uid"`
 	GID      string `bson:"gid" json:"gid"`
 	Role     uint8  `bson:"role" json:"role"`
-	Avatar   string `bson:"my_alias" json:"my_alias"`
-	AdminAt  int64  `bson:"admin_time" json:"admin_time"`
-	CreateAt int64  `bson:"create_time" json:"create_time"`
+	Avatar   string `bson:"avatar" json:"avatar,omitempty"`
+	MyAlias  string `bson:"my_alias" json:"my_alias,omitempty"`
+	AdminAt  int64  `bson:"admin_time" json:"admin_time,omitempty"`
+	CreateAt int64  `bson:"create_time" json:"create_time,omitempty"`
 }
 
 type BaseInfoResponse struct {
 	UID      string `bson:"uid" json:"uid"`
 	Role     uint8  `bson:"role" json:"role"`
 	CreateAt int64  `bson:"create_time" json:"create_time"`
+}
+
+type EncInfoResponse struct {
+	EncPri string `bson:"enc_pri" json:"enc_pri,omitempty"`
+	EncKey string `bson:"enc_key" json:"enc_key,omitempty"`
+}
+
+type ApplyRes struct {
+	ID        string `bson:"_id" json:"id"`
+	GID       string `bson:"gid" json:"gid"`
+	Avatar    string `bson:"avatar" json:"avatar,omitempty"`
+	Name      string `bson:"name" json:"name,omitempty"`
+	EncKey    string `bson:"enc_key" json:"enc_key"`
+	Status    int8   `bson:"status" json:"status"`
+	CreatedAt int64  `bson:"created_at" json:"create_time"`
 }
 
 const (
@@ -71,7 +90,7 @@ const (
 	JoinTypeSelf   = 1
 )
 const (
-	StatusDel, StatusIng, StatusYes = -1, 0, 1
+	StatusIng, StatusYes, StatusRefuse = 0, 1, 2
 )
 
 func New() *Members {
@@ -198,14 +217,13 @@ func (m Members) GetMyGroupList(uid string, gids []string) ([]MyGroupRes, error)
 	for _, item := range items {
 		gidSlice = append(gidSlice, item.GroupID)
 	}
-	groups, err := detail.New().GetInfoById(gidSlice, "_id,avatar,name,create_time")
+	groups, err := detail.New().GetInfoByIds(gidSlice)
 	if groups == nil {
 		return res, err
 	}
 	for _, v := range groups {
 		item := MyGroupRes{
 			ID:        v.ID,
-			UID:       uid,
 			Avatar:    v.Avatar,
 			Name:      v.Name,
 			CreatedAt: v.CreatedAt,
@@ -221,11 +239,13 @@ func (m Members) GetMyGroupIdList(uid string) ([]GroupIDsRes, error) {
 	return res, nil
 }
 
-func (m Members) GetMyGroupByIds(uid string, ids []string) ([]GroupIDsRes, error) {
-	res := make([]GroupIDsRes, 0)
+func (m Members) GetMyGroupByIds(uid string, ids []string) ([]ApplyRes, error) {
+	res := make([]ApplyRes, 0)
 	where := bson.M{
 		"uid": uid,
-		"gid": bson.M{"$in": ids},
+	}
+	if len(ids) > 0 {
+		where["gid"] = bson.M{"$in": ids}
 	}
 	m.collection(mongo.SecondaryPreferredMode).Where(where).Fields(bson.M{"gid": 1}).FindMany(&res)
 	return res, nil
@@ -245,7 +265,7 @@ func (m Members) GetGroupsMemberInfo(gid []string, fields string) ([]Members, er
 
 func (m Members) GetMembersInfo(gid string, uids []string) ([]GroupMembersInfoRes, error) {
 	data := make([]GroupMembersInfoRes, 0)
-	fields := dao.GetMongoFieldsBsonByString("_id,uid,gid,role,my_alias,admin_time,create_time")
+	fields := dao.GetMongoFieldsBsonByString("_id,uid,gid,enc_key,enc_pri,pub,role,my_alias,admin_time,create_time")
 	where := bson.M{"gid": gid}
 	if len(uids) != 0 {
 		where["uid"] = bson.M{"$in": uids}
@@ -265,6 +285,19 @@ func (m Members) GetMembersByIds(gids, uids []string) ([]GroupMembersInfoRes, er
 		where["uid"] = bson.M{"$in": uids}
 	}
 	err := m.collection(mongo.SecondaryPreferredMode).Where(where).Fields(fields).FindMany(&data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (m Members) GetEncInfoByIds(gids, uids []string) ([]EncInfoResponse, error) {
+	data := make([]EncInfoResponse, 0)
+	where := bson.M{"gid": bson.M{"$in": gids}}
+	if len(uids) != 0 {
+		where["uid"] = bson.M{"$in": uids}
+	}
+	err := m.collection(mongo.SecondaryPreferredMode).Where(where).FindMany(&data)
 	if err != nil {
 		return nil, err
 	}

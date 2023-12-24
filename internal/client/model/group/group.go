@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/common/dao/chat/changelogs"
@@ -23,10 +24,11 @@ import (
 type CreateRequest struct {
 	Id      string   `json:"id" binding:"required"`
 	Avatar  string   `json:"avatar"`
-	PubKey  string   `json:"pub_key"`
+	Pub     string   `json:"pub"`
+	EncPri  string   `json:"enc_pri"`
 	EncKey  string   `json:"enc_key"`
-	Name    string   `json:"name" binding:"required,gt=3,lte=64"`
-	Members []string `json:"members" binding:"required"`
+	Members []string `json:"members"`
+	Name    string   `json:"name" binding:"required,gt=0,lte=64"`
 }
 
 type GetGroupMemberInfoByUIdsRequest struct {
@@ -60,18 +62,20 @@ func Create(ctx context.Context, uid string, params CreateRequest) (err error) {
 	allMemIds = funcs.RemoveDuplicatesAndEmpty(allMemIds)
 	// save group detail data
 	groupDetail := detail.Detail{
-		ID:        params.Id,
-		Creator:   uid,
-		Owner:     uid,
-		Name:      params.Name,
-		Avatar:    params.Avatar,
-		Total:     len(allMemIds),
-		CreatedAt: t,
-		UpdatedAt: t,
+		ID:          params.Id,
+		Creator:     uid,
+		Owner:       uid,
+		Name:        params.Name,
+		Avatar:      params.Avatar,
+		Total:       len(allMemIds),
+		MemberLimit: 100,
+		Pub:         params.Pub,
+		CreatedAt:   t,
+		UpdatedAt:   t,
 	}
-	if len(allMemIds) < 3 {
-		return errno.Add("Group of at least 3 user", errno.MissingParams)
-	}
+	//if len(allMemIds) < 3 {
+	//	return errno.Add("Group of at least 3 user", errno.MissingParams)
+	//}
 	if err = detail.New().Add(groupDetail); err != nil && !mongoDriver.IsDuplicateKeyError(err) {
 		//app.Logger().WithField("action", "create group").WithField("desc", "save group detail unsuccessfully").Error(err)
 		return errno.Add("failed to save group", errno.Exception)
@@ -89,10 +93,12 @@ func Create(ctx context.Context, uid string, params CreateRequest) (err error) {
 			GroupID:   params.Id,
 			UID:       u,
 			EncKey:    params.EncKey,
+			EncPri:    params.EncPri,
 			Role:      members.RoleCommonMember,
 			JoinType:  members.JoinTypeInvite,
 			InviteUID: uid,
 			Status:    members.StatusYes,
+			MyAlias:   "",
 			CreatedAt: t,
 			UpdatedAt: t,
 		}
@@ -101,15 +107,13 @@ func Create(ctx context.Context, uid string, params CreateRequest) (err error) {
 		}
 		er := membersDao.UpsertOne(item)
 		if er != nil {
-			fmt.Println("item and err:", item, err)
+			by, _ := json.Marshal(item)
+			fmt.Println("item and err:", string(by), er)
 			//app.Logger().WithField("action", "create group").WithField("desc", "save members unsuccessfully").Error(err)
 			return errno.Add("failed to save group", errno.Exception)
 		}
 		uIds = append(uIds, u)
 		//memList = append(memList, item)
-	}
-	if len(uIds) == 1 {
-		return errno.Add("user-status-delete", errno.UserDelete)
 	}
 
 	if err != nil {
@@ -279,8 +283,8 @@ func QuitGroup(ctx context.Context, uid string, request QuitRequest) error {
 	return nil
 }
 
-func AgreeJoin(ctx context.Context, request AgreeJoinRequest) error {
-	_, err := verifyGroupAndIsOwner(request.UID, request.GroupID, true)
+func AgreeJoin(ctx context.Context, uid string, request AgreeJoinRequest) error {
+	_, err := verifyGroupAndIsOwner(uid, request.GroupID, true)
 	if err != nil {
 		return err
 	}
@@ -290,7 +294,11 @@ func AgreeJoin(ctx context.Context, request AgreeJoinRequest) error {
 		for _, s := range request.ObjUid {
 			ids = append(ids, dao.GetId(s, request.GroupID))
 		}
-		err = dao.UpByIDs(ids, members.Members{Status: members.StatusYes})
+		err = dao.UpByIDs(ids, members.Members{
+			Status: members.StatusYes,
+			EncPri: request.EncPri,
+			EncKey: request.EncKey,
+		})
 		if err != nil {
 			return errno.Add("sys-err", errno.SysErr)
 		}
@@ -666,7 +674,11 @@ func GetMembersInfo(ctx context.Context, uid string, request MembersRequest) ([]
 }
 
 func GetMembersByIds(ctx context.Context, uid string, request GetMembersByIdsRequest) ([]members.GroupMembersInfoRes, error) {
-	return members.New().GetMembersByIds(request.GroupIds, request.ObjUid)
+	return members.New().GetMembersByIds(request.GroupIds, request.UIds)
+}
+
+func GetEncInfoByIds(ctx context.Context, uid string, request IdsRequest) ([]members.EncInfoResponse, error) {
+	return members.New().GetEncInfoByIds(request.GroupIDs, []string{uid})
 }
 
 func KickOutGroup(ctx context.Context, uid string, request KickOutRequest) error {
@@ -752,6 +764,10 @@ func KickOutGroup(ctx context.Context, uid string, request KickOutRequest) error
 		UIds:   request.ObjUid,
 	})
 	return nil
+}
+
+func GetDetailByIds(ctx context.Context, uid string, request IdsRequest) ([]detail.ListResponse, error) {
+	return detail.New().GetInfoByIds(request.GroupIDs)
 }
 
 func DisbandGroup(ctx context.Context, uid string, request IdRequest) error {
@@ -1250,7 +1266,7 @@ func GetGroupsMemberIds(gIds []string) ([]map[string]interface{}, error) {
 //}
 
 func GetGroupName(uid string, ids []string) ([]BaseDetail, error) {
-	list, err := detail.New().GetInfoById(ids, "_id,name,avatar")
+	list, err := detail.New().GetInfoByIds(ids)
 	result := make([]BaseDetail, 0)
 	if err != nil {
 		return result, err

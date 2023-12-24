@@ -19,8 +19,8 @@ func CreateGroup(ctx *gin.Context) {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	userId, _ := ctx.Get("uid")
-	if err = group.Create(ctx, userId.(string), params); err != nil {
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	if err = group.Create(ctx, uid, params); err != nil {
 		response.RespErr(ctx, err)
 		return
 	}
@@ -54,8 +54,26 @@ func GetMembersByIds(ctx *gin.Context) {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	userId, _ := ctx.Get("uid")
-	res, er := group.GetMembersByIds(ctx, userId.(string), params)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	res, er := group.GetMembersByIds(ctx, uid, params)
+	if er != nil {
+		response.RespErr(ctx, er)
+		return
+	}
+	response.RespListData(ctx, res)
+	return
+}
+
+func GetEncInfoByIds(ctx *gin.Context) {
+	var params group.IdsRequest
+	data, _ := ctx.Get("data")
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	if err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	res, er := group.GetEncInfoByIds(ctx, uid, params)
 	if er != nil {
 		response.RespErr(ctx, er)
 		return
@@ -66,14 +84,14 @@ func GetMembersByIds(ctx *gin.Context) {
 
 func Join(ctx *gin.Context) {
 	var params group.JoinRequest
-	userId, _ := ctx.Get("uid")
+	uid := ctx.Value(base.HeaderFieldUID).(string)
 	data, _ := ctx.Get("data")
 	err := json.Unmarshal([]byte(data.(string)), &params)
 	if err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	if err = group.Join(ctx, userId.(string), params); err != nil {
+	if err = group.Join(ctx, uid, params); err != nil {
 		response.RespErr(ctx, err)
 		return
 	}
@@ -83,15 +101,14 @@ func Join(ctx *gin.Context) {
 
 func AgreeJoin(ctx *gin.Context) {
 	var params group.AgreeJoinRequest
-	userId, _ := ctx.Get("uid")
 	data, _ := ctx.Get("data")
-	params.UID = userId.(string)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
 	err := json.Unmarshal([]byte(data.(string)), &params)
 	if err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	err = group.AgreeJoin(ctx, params)
+	err = group.AgreeJoin(ctx, uid, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return
@@ -102,14 +119,14 @@ func AgreeJoin(ctx *gin.Context) {
 
 func GetList(ctx *gin.Context) {
 	var params group.IdsRequest
-	userId, _ := ctx.Get("uid")
+	uid := ctx.Value(base.HeaderFieldUID).(string)
 	data, _ := ctx.Get("data")
 	err := json.Unmarshal([]byte(data.(string)), &params)
 	if err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	res, _ := group.GetListByUid(ctx, userId.(string), params)
+	res, _ := group.GetListByUid(ctx, uid, params)
 	response.RespListData(ctx, res)
 	return
 }
@@ -263,11 +280,16 @@ func ClearMessage(ctx *gin.Context) {
 }
 
 func ApplyList(ctx *gin.Context) {
-	var params group.IdRequest
+	var params group.IdsRequest
 	fmt.Println(params)
+	data, _ := ctx.Get("data")
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	if err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
 	uid := ctx.Value(base.HeaderFieldUID).(string)
-	fmt.Println("Unsubscribe uid:", uid)
-	var err error
+	group.ApplyList(ctx, uid, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return
@@ -276,16 +298,36 @@ func ApplyList(ctx *gin.Context) {
 	return
 }
 
-func DetailByIds(ctx *gin.Context) {
+func MyApplyList(ctx *gin.Context) {
 	var params group.IdsRequest
+	data, _ := ctx.Get("data")
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	if err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
 	uid := ctx.Value(base.HeaderFieldUID).(string)
-	fmt.Println("GetDetail uid:", uid, params)
-	var err error
+
+	res, _ := group.MyApplyList(ctx, uid, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return
 	}
-	response.RespSuc(ctx)
+	response.RespListData(ctx, res)
+	return
+}
+
+func DetailByIds(ctx *gin.Context) {
+	var params group.IdsRequest
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	data, _ := ctx.Get("data")
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	res, _ := group.GetDetailByIds(ctx, uid, params)
+	if err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
+	response.RespListData(ctx, res)
 	return
 }
 func GetQrCode(ctx *gin.Context) {

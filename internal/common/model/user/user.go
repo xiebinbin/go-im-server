@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/common/dao/user"
 	"imsdk/internal/common/dao/user/infov2/info"
@@ -62,6 +63,7 @@ func RegUser(ctx context.Context) (user.User, error) {
 
 func GetUserErr(uid string) error {
 	uInfo, _ := user.New().GetInfoById(uid)
+	fmt.Println("uInfo:", uInfo, uInfo.Status)
 	if uInfo.Status == info.StatusDelete {
 		return errno.Add("user-status-delete", errno.UserDelete)
 	} else if uInfo.Status == info.StatusForbid {

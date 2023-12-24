@@ -18,6 +18,7 @@ type Detail struct {
 	Owner       string `bson:"owner" json:"owner,omitempty"`
 	Name        string `bson:"name" json:"name,omitempty"`
 	Notice      string `bson:"notice" json:"notice,omitempty"`
+	Pub         string `bson:"pub" json:"pub,omitempty"`
 	NoticeId    string `bson:"notice_md5" json:"notice_md5,omitempty"`
 	Desc        string `bson:"desc" json:"desc,omitempty"`
 	DescMd5     string `bson:"desc_md5" json:"desc_md5,omitempty"`
@@ -29,9 +30,23 @@ type Detail struct {
 	UpdatedAt   int64  `bson:"update_time" json:"update_time,omitempty"`
 }
 
+type ListResponse struct {
+	ID          string `bson:"_id" json:"id"`
+	Name        string `bson:"name" json:"name"`
+	Avatar      string `bson:"avatar" json:"avatar"`
+	Notice      string `bson:"notice" json:"notice"`
+	Desc        string `bson:"desc" json:"desc"`
+	Total       int    `bson:"total" json:"total"`
+	MemberLimit int    `bson:"member_limit" json:"member_limit"`
+	Owner       string `bson:"owner" json:"owner"`
+	NoticeMd5   string `bson:"notice_md5" json:"notice_md5"`
+	Pub         string `bson:"pub" json:"pub"`
+	CreatedAt   int64  `bson:"create_time" json:"create_time,omitempty"`
+}
+
 const (
 	StatusDel       = -1
-	StatusForbidden = 0
+	StatusForbidden = -2
 	StatusYes       = 1
 	TotalMax        = 300
 )
@@ -89,9 +104,9 @@ func (d Detail) UpMapByID(id string, uData map[string]interface{}) error {
 	return err
 }
 
-func (d Detail) GetInfoById(ids []string, fields string) ([]Detail, error) {
-	var data []Detail
-	d.Collection(mongo.SecondaryPreferredMode).Where(bson.M{"_id": bson.M{"$in": ids}}).Fields(dao.GetMongoFieldsBsonByString(fields)).FindMany(&data)
+func (d Detail) GetInfoByIds(ids []string) ([]ListResponse, error) {
+	var data []ListResponse
+	d.Collection(mongo.SecondaryPreferredMode).Where(bson.M{"_id": bson.M{"$in": ids}}).FindMany(&data)
 	return data, nil
 }
 

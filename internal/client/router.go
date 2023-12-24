@@ -80,6 +80,7 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/group/kickOut", group.KickOut)
 	engine.POST("/group/members", group.GetMembersInfo)
 	engine.POST("/group/membersByIds", group.GetMembersByIds)
+	engine.POST("/group/encInfoByIds", group.GetEncInfoByIds)
 	engine.POST("/group/list", group.GetList)
 	engine.POST("/group/updateName", group.UpdateName)
 	engine.POST("/group/updateAlias", group.UpdateAlias)
@@ -94,6 +95,7 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/group/removeAdmin", group.RemoveAdministrators)
 	engine.POST("/group/clearMessage", group.ClearMessage)
 	engine.POST("/group/applyList", group.ApplyList)
+	engine.POST("/group/myApplyList", group.MyApplyList)
 	engine.POST("/group/detailByIds", group.DetailByIds)
 
 	//engine.POST("/sendCmd", common.SendCmd)

@@ -5,7 +5,7 @@ type IdRequest struct {
 }
 
 type IdsRequest struct {
-	GroupIDs []string `json:"ids" binding:"required"`
+	GroupIDs []string `json:"ids""`
 }
 
 type ClearMessageRequest struct {
@@ -20,7 +20,7 @@ type MembersRequest struct {
 
 type GetMembersByIdsRequest struct {
 	GroupIds []string `json:"ids" binding:"required"`
-	ObjUid   []string `json:"obj_uid"`
+	UIds     []string `json:"uids"`
 }
 
 type QuitRequest struct {
@@ -44,6 +44,8 @@ type JoinRequest struct {
 
 type AgreeJoinRequest struct {
 	UID     string   `json:"uid"`
+	EncPri  string   `json:"enc_pri"`
+	EncKey  string   `json:"enc_key"`
 	GroupID string   `json:"id" binding:"required"`
 	ObjUid  []string `json:"obj_uid" binding:"required"`
 }
