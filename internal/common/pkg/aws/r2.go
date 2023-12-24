@@ -3,14 +3,15 @@ package aws
 import (
 	"context"
 	"fmt"
+	"imsdk/pkg/app"
+	"imsdk/pkg/funcs"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	json "github.com/json-iterator/go"
-	"imsdk/pkg/app"
-	"imsdk/pkg/funcs"
-	"time"
 )
 
 type R2Resolver struct {
@@ -48,12 +49,12 @@ func GetR2Client() *s3.Client {
 	return client
 }
 
-func GetPreSignURL(client *s3.Client, bucketName string) string {
+func GetPreSignURL(client *s3.Client, bucketName string, key string) string {
 	presignClient := s3.NewPresignClient(client)
 	t := time.Unix(funcs.GetMillis()+604800000, 0)
 	presignResult, err := presignClient.PresignPutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:  aws.String(bucketName),
-		Key:     aws.String("miyaya.txt"),
+		Key:     aws.String(key),
 		Expires: aws.Time(t),
 	})
 

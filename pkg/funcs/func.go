@@ -10,11 +10,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/syyongx/php2go"
-	"golang.org/x/text/encoding/simplifiedchinese"
-	"golang.org/x/text/transform"
 	"hash/fnv"
 	"io/ioutil"
 	"log"
@@ -29,6 +24,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/syyongx/php2go"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 func Str2Modulo(str string) uint64 {
@@ -231,13 +232,13 @@ func StrSha256(str string) string {
 	return hex.EncodeToString(hashInBytes[:])
 }
 
-//UTF82GBK : transform UTF8 rune into GBK byte array
+// UTF82GBK : transform UTF8 rune into GBK byte array
 func UTF82GBK(src string) ([]byte, error) {
 	GB18030 := simplifiedchinese.All[0]
 	return ioutil.ReadAll(transform.NewReader(bytes.NewReader([]byte(src)), GB18030.NewEncoder()))
 }
 
-//GBK2UTF8 : transform  GBK byte array into UTF8 string
+// GBK2UTF8 : transform  GBK byte array into UTF8 string
 func GBK2UTF8(src []byte) (string, error) {
 	GB18030 := simplifiedchinese.All[0]
 	bytes, err := ioutil.ReadAll(transform.NewReader(bytes.NewReader(src), GB18030.NewDecoder()))

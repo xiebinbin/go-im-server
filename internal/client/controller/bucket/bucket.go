@@ -1,17 +1,34 @@
 package bucket
 
 import (
-	"github.com/gin-gonic/gin"
+	"encoding/json"
 	"imsdk/internal/client/model/bucket"
 	"imsdk/internal/common/pkg/aws"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
+	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type GetAwsHeadObjectRequest = bucket.GetAwsHeadObjectRequest
+type GetPreSignURLRequest struct {
+	Key string `json:"key" binding:"required"`
+}
 
 func GetPreSignURL(ctx *gin.Context) {
-	url := aws.GetPreSignURL(aws.GetR2Client(), "bobobo-test")
+	var params GetPreSignURLRequest
+	data, _ := ctx.Get("data")
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	if err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
+	if len(params.Key) == 0 || !strings.HasPrefix(params.Key, "/") {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
+	url := aws.GetPreSignURL(aws.GetR2Client(), "bobobo-test", params.Key)
 	response.RespData(ctx, map[string]interface{}{
 		"url": url,
 	})
