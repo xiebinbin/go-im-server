@@ -3,14 +3,15 @@ package members
 import (
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
-	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/common/dao"
 	"imsdk/internal/common/dao/group/detail"
 	"imsdk/pkg/database/mongo"
 	"imsdk/pkg/funcs"
 	"imsdk/pkg/redis"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
 type Members struct {
@@ -239,8 +240,8 @@ func (m Members) GetMyGroupIdList(uid string) ([]GroupIDsRes, error) {
 	return res, nil
 }
 
-func (m Members) GetMyGroupByIds(uid string, ids []string) ([]ApplyRes, error) {
-	res := make([]ApplyRes, 0)
+func (m Members) GetMyGroupByIds(uid string, ids []string) ([]Members, error) {
+	res := make([]Members, 0)
 	where := bson.M{
 		"uid": uid,
 	}

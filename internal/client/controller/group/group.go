@@ -3,12 +3,13 @@ package group
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/model/group"
 	"imsdk/internal/common/dao/group/members"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 func CreateGroup(ctx *gin.Context) {
@@ -289,12 +290,12 @@ func ApplyList(ctx *gin.Context) {
 		return
 	}
 	uid := ctx.Value(base.HeaderFieldUID).(string)
-	group.ApplyList(ctx, uid, params)
+	res, _ := group.ApplyList(ctx, uid, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return
 	}
-	response.RespSuc(ctx)
+	response.RespListData(ctx, res)
 	return
 }
 
