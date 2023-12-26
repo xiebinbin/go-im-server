@@ -2,6 +2,7 @@ package bucket
 
 import (
 	"encoding/json"
+	"fmt"
 	"imsdk/internal/client/model/bucket"
 	"imsdk/internal/common/pkg/aws"
 	"imsdk/pkg/errno"
@@ -19,15 +20,17 @@ type GetPreSignURLRequest struct {
 func GetPreSignURL(ctx *gin.Context) {
 	var params GetPreSignURLRequest
 	data, _ := ctx.Get("data")
+	fmt.Println("upload data %%%%%%%%%%%%%%%%", data)
 	err := json.Unmarshal([]byte(data.(string)), &params)
 	if err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	if len(params.Key) == 0 || !strings.HasPrefix(params.Key, "/") {
+	if len(params.Key) == 0 || !strings.HasPrefix(params.Key, "upload/") {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
+	fmt.Println("upload key %%%%%%%%%%%%%%%%", params.Key)
 	url := aws.GetPreSignURL(aws.GetR2Client(), "bobobo-test", params.Key)
 	response.RespData(ctx, map[string]interface{}{
 		"url": url,

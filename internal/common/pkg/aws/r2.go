@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"imsdk/pkg/app"
-	"imsdk/pkg/funcs"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -30,13 +28,11 @@ func (r *R2Resolver) ResolveEndpoint(service, region string) (aws.Endpoint, erro
 }
 
 func GetR2Client() *s3.Client {
-	//var bucketName = "bobobo-test"
 	var r2Account R2Account
 	app.Config().Bind("global", "r2_account", &r2Account)
 	r2Resolver := &R2Resolver{
 		AccountId: r2Account.AccountId,
 	}
-	fmt.Println("r2Account:", r2Account)
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithEndpointResolver(r2Resolver),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(r2Account.AccessKeyId, r2Account.AccessKeySecret, "")),
@@ -44,18 +40,16 @@ func GetR2Client() *s3.Client {
 	if err != nil {
 		//log.Fatal(err)
 	}
-	//client1 := sts.NewFromConfig(cfg)
 	client := s3.NewFromConfig(cfg)
 	return client
 }
 
 func GetPreSignURL(client *s3.Client, bucketName string, key string) string {
 	presignClient := s3.NewPresignClient(client)
-	t := time.Unix(funcs.GetMillis()+604800000, 0)
 	presignResult, err := presignClient.PresignPutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:  aws.String(bucketName),
-		Key:     aws.String(key),
-		Expires: aws.Time(t),
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(key),
+		//Expires: aws.Time(time.Now().Add(15 * time.Second)), // 15 minutes
 	})
 
 	if err != nil {

@@ -8,13 +8,13 @@ import (
 
 func MyApplyList(ctx context.Context, uid string, request IdsRequest) ([]members.ApplyRes, error) {
 	dao := members.New()
-	applyList, _ := dao.GetMyGroupByIds(uid, request.GroupIDs)
+	groupMembers, _ := dao.GetMyGroupByIds(uid, request.GroupIDs)
 	ids := make([]string, 0)
-	memMap := make(map[string]members.ApplyRes)
-	if len(applyList) > 0 {
-		for _, v := range applyList {
-			ids = append(ids, v.GID)
-			memMap[v.GID] = v
+	memMap := make(map[string]members.Members)
+	if len(groupMembers) > 0 {
+		for _, v := range groupMembers {
+			ids = append(ids, v.GroupID)
+			memMap[v.GroupID] = v
 		}
 	}
 	res := make([]members.ApplyRes, 0)

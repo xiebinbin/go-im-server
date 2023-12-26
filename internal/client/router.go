@@ -1,7 +1,6 @@
 package client
 
 import (
-	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/controller/bucket"
 	"imsdk/internal/client/controller/chat"
 	"imsdk/internal/client/controller/contacts"
@@ -14,6 +13,8 @@ import (
 	"imsdk/internal/client/controller/ws"
 	"imsdk/internal/client/middlewares"
 	middlewares2 "imsdk/internal/common/middlewares"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetEngine(engine *gin.Engine) {
@@ -28,11 +29,10 @@ func GetEngine(engine *gin.Engine) {
 	engine.Use(middlewares.CheckHeaders)
 	engine.POST("/auth/register", user.Register)
 	engine.POST("/user/isRegister", user.IsRegister)
-	engine.POST("/sys/preSignURL", bucket.GetPreSignURL)
 	engine.POST("/auth/getQRCode", user.GenerateLoginCode)
 	engine.POST("/auth/getQRCodeScanRes", user.ScanQrCodeRes)
-
 	engine.Use(middlewares.Auth)
+	engine.POST("/sys/preSignURL", bucket.GetPreSignURL)
 	engine.POST("/auth/info", user.GetAuthInfo)
 	engine.POST("/user/getBatchInfo", user.GetListInfo)
 	engine.POST("/user/updateName", user.UpdateName)
