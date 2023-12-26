@@ -3,11 +3,12 @@ package user
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/model/user"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetAuthInfo(ctx *gin.Context) {
@@ -79,11 +80,13 @@ func UpdateSign(ctx *gin.Context) {
 
 func UpdateAvatar(ctx *gin.Context) {
 	var params user.UpdateAvatarRequest
-	if err := ctx.ShouldBindJSON(&params); err != nil {
+	data, _ := ctx.Get("data")
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	if err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	err := user.UpdateAvatar(ctx, params)
+	err = user.UpdateAvatar(ctx, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return
