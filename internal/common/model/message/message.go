@@ -131,6 +131,7 @@ func saveMsgDetail(ctx context.Context, params SendMessageParams) (MsgItem, erro
 		Sequence:   number,
 		ReceiveIds: params.ReceiveIds,
 		Status:     status,
+		IsEnc:      params.IsEnc,
 		CreatedAt:  t,
 		UpdatedAt:  t,
 	}

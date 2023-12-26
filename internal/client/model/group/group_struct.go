@@ -1,11 +1,11 @@
 package group
 
 type IdRequest struct {
-	GroupID string `json:"id" binding:"required"`
+	Id string `json:"id" binding:"required"`
 }
 
 type IdsRequest struct {
-	GroupIDs []string `json:"ids""`
+	Ids []string `json:"ids"`
 }
 
 type ClearMessageRequest struct {
@@ -47,12 +47,12 @@ type AgreeJoinRequest struct {
 	EncPri  string   `json:"enc_pri"`
 	EncKey  string   `json:"enc_key"`
 	GroupID string   `json:"id" binding:"required"`
-	ObjUid  []string `json:"obj_uid" binding:"required"`
+	UIds    []string `json:"uids" binding:"required"`
 }
 
 type InviteJoinRequest struct {
 	GroupID string   `json:"id" binding:"required"`
-	ObjUid  []string `json:"obj_uid" binding:"required"`
+	UIds    []string `json:"uids" binding:"required"`
 }
 
 type KickOutRequest struct {

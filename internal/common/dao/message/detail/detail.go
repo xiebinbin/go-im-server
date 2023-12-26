@@ -25,6 +25,7 @@ type Detail struct {
 	Action     interface{}     `bson:"action" json:"action,omitempty"`
 	Status     int8            `bson:"status" json:"status"`
 	Type       int8            `bson:"type" json:"type"`
+	IsEnc      int8            `bson:"is_enc" json:"is_enc"`
 	Sequence   int64           `bson:"sequence" json:"sequence,omitempty"`
 	CreatedAt  int64           `bson:"create_time" json:"create_time"`
 	ReceiveIds []string        `bson:"receive_ids" json:"receive_ids,omitempty"`

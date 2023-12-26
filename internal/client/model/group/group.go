@@ -283,21 +283,38 @@ func QuitGroup(ctx context.Context, uid string, request QuitRequest) error {
 	return nil
 }
 
-func AgreeJoin(ctx context.Context, uid string, request AgreeJoinRequest) error {
+func AdminAgreeJoin(ctx context.Context, uid string, request AgreeJoinRequest) error {
 	_, err := verifyGroupAndIsOwner(uid, request.GroupID, true)
 	if err != nil {
 		return err
 	}
 	dao := members.New()
-	if len(request.ObjUid) > 0 {
+	if len(request.UIds) > 0 {
 		var ids []string
-		for _, s := range request.ObjUid {
+		for _, s := range request.UIds {
 			ids = append(ids, dao.GetId(s, request.GroupID))
 		}
 		err = dao.UpByIDs(ids, members.Members{
 			Status: members.StatusYes,
 			EncPri: request.EncPri,
 			EncKey: request.EncKey,
+		})
+		if err != nil {
+			return errno.Add("sys-err", errno.SysErr)
+		}
+	}
+	return nil
+}
+
+func AgreeJoin(ctx context.Context, uid string, request AgreeJoinRequest) error {
+	dao := members.New()
+	if len(request.UIds) > 0 {
+		var ids []string
+		for _, s := range request.UIds {
+			ids = append(ids, dao.GetId(s, request.GroupID))
+		}
+		err := dao.UpByIDs(ids, members.Members{
+			Status: members.StatusYes,
 		})
 		if err != nil {
 			return errno.Add("sys-err", errno.SysErr)
@@ -315,7 +332,7 @@ func InviteJoin(ctx context.Context, uid string, request InviteJoinRequest) erro
 		return errno.Add("user-not-exist", errno.UserNotExist)
 	}
 	groupMemberInfo, _ := members.New().GetGroupMember(request.GroupID)
-	ids, err := user2.New().GetInfoByStatus(request.ObjUid, []int{info.StatusDelete}, "_id,status")
+	ids, err := user2.New().GetInfoByStatus(request.UIds, []int{info.StatusDelete}, "_id,status")
 	if err != nil {
 		return err
 	}
@@ -325,7 +342,7 @@ func InviteJoin(ctx context.Context, uid string, request InviteJoinRequest) erro
 			deleteIds = append(deleteIds, v.ID)
 		}
 	}
-	objUid := funcs.SliceMinus(request.ObjUid, deleteIds)
+	objUid := funcs.SliceMinus(request.UIds, deleteIds)
 	if len(objUid) == 0 {
 		return errno.Add("user-status-delete", errno.UserDelete)
 	}
@@ -654,7 +671,7 @@ func UpdateAlias(ctx context.Context, uid string, request UpdateAliasRequest) er
 }
 
 func GetListByUid(ctx context.Context, uid string, request IdsRequest) ([]members.MyGroupRes, error) {
-	return members.New().GetMyGroupList(uid, request.GroupIDs)
+	return members.New().GetMyGroupList(uid, request.Ids)
 }
 
 func GetIdListByUid(uid string) ([]string, error) {
@@ -678,7 +695,7 @@ func GetMembersByIds(ctx context.Context, uid string, request GetMembersByIdsReq
 }
 
 func GetEncInfoByIds(ctx context.Context, uid string, request IdsRequest) ([]members.EncInfoResponse, error) {
-	return members.New().GetEncInfoByIds(request.GroupIDs, []string{uid})
+	return members.New().GetEncInfoByIds(request.Ids, []string{uid})
 }
 
 func KickOutGroup(ctx context.Context, uid string, request KickOutRequest) error {
@@ -767,15 +784,15 @@ func KickOutGroup(ctx context.Context, uid string, request KickOutRequest) error
 }
 
 func GetDetailByIds(ctx context.Context, uid string, request IdsRequest) ([]detail.ListResponse, error) {
-	return detail.New().GetInfoByIds(request.GroupIDs)
+	return detail.New().GetInfoByIds(request.Ids)
 }
 
 func DisbandGroup(ctx context.Context, uid string, request IdRequest) error {
-	_, err := verifyGroupAndIsAdministrator(uid, request.GroupID, true)
+	_, err := verifyGroupAndIsAdministrator(uid, request.Id, true)
 	if err != nil {
 		return err
 	}
-	if ChangeGroupStatus(uid, request.GroupID, detail.StatusDel) == nil {
+	if ChangeGroupStatus(uid, request.Id, detail.StatusDel) == nil {
 		//changelogs.New().UpdateGroupInfo(gid)
 		return nil
 	}

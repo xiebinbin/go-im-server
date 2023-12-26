@@ -29,6 +29,7 @@ type SendMessageParams struct {
 	ReceiveIds    []string               `json:"receive_ids"`
 	Status        int8                   `json:"status"`
 	Type          int8                   `json:"type"`
+	IsEnc         int8                   `json:"is_enc"`
 	Content       base.JsonString        `json:"content"`
 	Extra         base.JsonString        `json:"extra"`
 	Offline       map[string]interface{} `json:"offline"`

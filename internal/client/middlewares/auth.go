@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,7 @@ import (
 	"imsdk/internal/common/pkg/config"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -74,12 +76,14 @@ func deCrypto(ctx *gin.Context, data, pubKey string) {
 	fmt.Println("ctx.Value(base.HeaderIsEnc)", ctx.Value(base.HeaderIsEnc))
 	if ctx.Value(base.HeaderIsEnc).(string) == "false" {
 		ctx.Set("data", data)
+		ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(data)))
 		return
 	}
 
 	res, _ := crypt.De(key, data)
 	fmt.Println("req data:", string(res))
 	ctx.Set("data", string(res))
+	ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(res))
 	/*res, _ := json.Marshal(data)*/
 }
 

@@ -9,6 +9,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"imsdk/pkg/app"
 	"imsdk/pkg/funcs"
@@ -75,7 +76,8 @@ type (
 // Start 启动 mongo
 func Start() {
 	err1 := app.Config().Bind("db", "mongo", &conf)
-	if err1 == app.ErrNodeNotExists {
+	fmt.Println("mongo conf: ", conf, err1)
+	if errors.Is(err1, app.ErrNodeNotExists) {
 		// 配置节点不存在, 不启动服务
 		return
 	}

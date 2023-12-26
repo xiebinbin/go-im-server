@@ -10,7 +10,7 @@ var (
 	ak,
 	hollowUId,
 	offlineCallBackUrl,
-	paymentUId,
+	staticUrl,
 	defBucketId string
 )
 
@@ -49,13 +49,15 @@ func GetDefBucketId() (string, error) {
 	return defBucketId, nil
 }
 
-func GetPayUId() (string, error) {
-	if paymentUId != "" {
-		return paymentUId, nil
+func GetStaticUrl() (string, error) {
+	if staticUrl != "" {
+		return staticUrl, nil
 	}
-	paymentUIdConf, _ := app.Config().GetChildConf("global", "system_user", "tdimpay_uid")
-	paymentUId = paymentUIdConf.(string)
-	return paymentUId, nil
+	staticUrlConf, err := app.Config().GetChildConf("global", "system", "static_url")
+	if err != nil {
+		return "", nil
+	}
+	return staticUrlConf.(string), nil
 }
 
 func GetDefRegion() (string, error) {

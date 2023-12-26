@@ -76,6 +76,7 @@ type ApplyRes struct {
 	Avatar    string `bson:"avatar" json:"avatar,omitempty"`
 	Name      string `bson:"name" json:"name,omitempty"`
 	EncKey    string `bson:"enc_key" json:"enc_key"`
+	Role      uint8  `bson:"role" json:"role"`
 	Status    int8   `bson:"status" json:"status"`
 	CreatedAt int64  `bson:"created_at" json:"create_time"`
 }
@@ -240,15 +241,30 @@ func (m Members) GetMyGroupIdList(uid string) ([]GroupIDsRes, error) {
 	return res, nil
 }
 
-func (m Members) GetMyGroupByIds(uid string, ids []string) ([]Members, error) {
-	res := make([]Members, 0)
-	where := bson.M{
-		"uid": uid,
-	}
+func (m Members) GetMyGroupByIds(uid string, ids []string) ([]ApplyRes, error) {
+	res := make([]ApplyRes, 0)
+	where := bson.M{"uid": uid}
 	if len(ids) > 0 {
 		where["gid"] = bson.M{"$in": ids}
 	}
 	m.collection(mongo.SecondaryPreferredMode).Where(where).Fields(bson.M{"gid": 1}).FindMany(&res)
+	return res, nil
+}
+
+func (m Members) GetListsByStatusAndRole(uid string, ids []string, status []int8, role []uint8) ([]ApplyRes, error) {
+	res := make([]ApplyRes, 0)
+	where := bson.M{"uid": uid}
+	if len(ids) > 0 {
+		where["gid"] = bson.M{"$in": ids}
+	}
+	if len(status) >= 0 {
+		where["status"] = bson.M{"$in": status}
+	}
+
+	if len(role) >= 0 {
+		where["role"] = bson.M{"$in": role}
+	}
+	m.collection(mongo.SecondaryPreferredMode).Where(where).FindMany(&res)
 	return res, nil
 }
 

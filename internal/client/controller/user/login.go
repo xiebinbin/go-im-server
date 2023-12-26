@@ -2,7 +2,7 @@ package user
 
 import (
 	"imsdk/internal/common/model/user"
-	"imsdk/pkg/app"
+	"imsdk/internal/common/pkg/config"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
 
@@ -12,14 +12,13 @@ import (
 type getAuthRequest = user.GetAuthParams
 
 func GetSysInfo(ctx *gin.Context) {
-	val, err := app.Config().GetChildConf("global", "system", "static_url")
+	staticUrl, err := config.GetStaticUrl()
 	if err != nil {
 		response.RespErr(ctx, errno.Add("get-static-url-err", errno.ParamsErr))
 		return
 	}
-
 	data := map[string]string{
-		"static_url": val.(string),
+		"static_url": staticUrl,
 		"pub_key":    user.GetPubKey(ctx),
 	}
 	response.RespDataWithNoEnc(ctx, data)

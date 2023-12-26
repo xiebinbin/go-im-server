@@ -118,6 +118,24 @@ func AgreeJoin(ctx *gin.Context) {
 	return
 }
 
+func AdminAgreeJoin(ctx *gin.Context) {
+	var params group.AgreeJoinRequest
+	data, _ := ctx.Get("data")
+	uid := ctx.Value(base.HeaderFieldUID).(string)
+	err := json.Unmarshal([]byte(data.(string)), &params)
+	if err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
+	err = group.AdminAgreeJoin(ctx, uid, params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}
+
 func GetList(ctx *gin.Context) {
 	var params group.IdsRequest
 	uid := ctx.Value(base.HeaderFieldUID).(string)
@@ -138,7 +156,7 @@ func GetMemberIds(ctx *gin.Context) {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	data, _ := members.New().GetMemberIds(params.GroupID)
+	data, _ := members.New().GetMemberIds(params.Id)
 	response.ResData(ctx, data)
 	return
 }
@@ -171,21 +189,21 @@ func GetGroupsMemberIds(ctx *gin.Context) {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	data, _ := group.GetGroupsMemberIds(params.GroupIDs)
+	data, _ := group.GetGroupsMemberIds(params.Ids)
 	response.RespData(ctx, data)
 	return
 }
 
 func InviteJoin(ctx *gin.Context) {
 	var params group.InviteJoinRequest
-	userId, _ := ctx.Get("uid")
+	uid := ctx.Value(base.HeaderFieldUID).(string)
 	data, _ := ctx.Get("data")
 	err := json.Unmarshal([]byte(data.(string)), &params)
 	if err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	err = group.InviteJoin(ctx, userId.(string), params)
+	err = group.InviteJoin(ctx, uid, params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return
@@ -282,7 +300,6 @@ func ClearMessage(ctx *gin.Context) {
 
 func ApplyList(ctx *gin.Context) {
 	var params group.IdsRequest
-	fmt.Println(params)
 	data, _ := ctx.Get("data")
 	err := json.Unmarshal([]byte(data.(string)), &params)
 	if err != nil {
@@ -290,9 +307,9 @@ func ApplyList(ctx *gin.Context) {
 		return
 	}
 	uid := ctx.Value(base.HeaderFieldUID).(string)
-	res, _ := group.ApplyList(ctx, uid, params)
-	if err != nil {
-		response.RespErr(ctx, err)
+	res, er := group.ApplyList(ctx, uid, params)
+	if er != nil {
+		response.RespErr(ctx, er)
 		return
 	}
 	response.RespListData(ctx, res)
