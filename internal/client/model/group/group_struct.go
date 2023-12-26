@@ -5,7 +5,7 @@ type IdRequest struct {
 }
 
 type IdsRequest struct {
-	Ids []string `json:"ids"`
+	Ids []string `json:"ids" binding:"required"`
 }
 
 type ClearMessageRequest struct {

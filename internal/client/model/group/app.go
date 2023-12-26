@@ -31,6 +31,10 @@ type DeleteByGIdsRequest struct { // 删除群组下的所有应用
 	GIds []string `json:"gids" binding:"required"`
 }
 
+type AppListByGIdsRequest struct { // 删除群组下的所有应用
+	GIds []string `json:"gids" binding:"required"`
+}
+
 func AddApp(ctx context.Context, uid string, request AddAppRequest) error {
 	t := funcs.GetMillis()
 	err := app.New().Add(app.App{
@@ -51,8 +55,8 @@ func AddApp(ctx context.Context, uid string, request AddAppRequest) error {
 	return nil
 }
 
-func AppList(ctx context.Context, uid string, request IdsRequest) ([]app.App, error) {
-	data, err := app.New().GetByIds(request.Ids, []int{app.StatusYes, app.StatusForbidden})
+func AppListByGIds(ctx context.Context, uid string, request AppListByGIdsRequest) ([]app.App, error) {
+	data, err := app.New().GetByGroupIds(request.GIds, []int{app.StatusYes, app.StatusForbidden})
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return []app.App{}, err
 	}

@@ -25,13 +25,13 @@ func AddApp(ctx *gin.Context) {
 }
 
 func AppList(ctx *gin.Context) {
-	var params group.IdsRequest
+	var params group.AppListByGIdsRequest
 	uid, _ := ctx.Get("uid")
 	if err := ctx.ShouldBindJSON(&params); err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
-	res, err := group.AppList(ctx, uid.(string), params)
+	res, err := group.AppListByGIds(ctx, uid.(string), params)
 	if err != nil {
 		response.RespErr(ctx, err)
 		return
