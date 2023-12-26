@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"imsdk/pkg/app"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -548,4 +549,20 @@ func RemoveRepeatedElement(arr []string) (newArr []string) {
 		}
 	}
 	return
+}
+
+type System struct {
+	StaticUrl string `toml:"static_url"`
+}
+
+func GetStaticUrl(path string) string {
+	if strings.HasPrefix(path, "http") {
+		return path
+	}
+	var system System
+	app.Config().Bind("global", "system", &system)
+	if len(system.StaticUrl) > 0 {
+		return system.StaticUrl + path
+	}
+	return path
 }
