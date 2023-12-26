@@ -29,6 +29,7 @@ var (
 
 func LoadConfig() {
 	config = new(Configuration).singleLoad()
+
 }
 
 // Config 得到config对象

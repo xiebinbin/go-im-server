@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
-	"imsdk/pkg/app"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -555,14 +554,18 @@ type System struct {
 	StaticUrl string `toml:"static_url"`
 }
 
+var StaticUrl string
+
+func SetStaticUrl(url string) {
+	StaticUrl = url
+}
+
 func GetStaticUrl(path string) string {
 	if strings.HasPrefix(path, "http") {
 		return path
 	}
-	var system System
-	app.Config().Bind("global", "system", &system)
-	if len(system.StaticUrl) > 0 {
-		return system.StaticUrl + path
+	if len(StaticUrl) > 0 {
+		return StaticUrl + path
 	}
 	return path
 }
