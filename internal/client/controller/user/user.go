@@ -20,7 +20,7 @@ func GetAuthInfo(ctx *gin.Context) {
 		response.RespErr(ctx, err)
 		return
 	}
-	response.ResData(ctx, list)
+	response.ResEnData(ctx, list[0])
 	return
 }
 

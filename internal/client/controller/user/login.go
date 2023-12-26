@@ -1,17 +1,26 @@
 package user
 
 import (
-	"github.com/gin-gonic/gin"
 	"imsdk/internal/common/model/user"
+	"imsdk/pkg/app"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 type getAuthRequest = user.GetAuthParams
 
-func GetPubKey(ctx *gin.Context) {
+func GetSysInfo(ctx *gin.Context) {
+	val, err := app.Config().GetChildConf("global", "system", "static_url")
+	if err != nil {
+		response.RespErr(ctx, errno.Add("get-static-url-err", errno.ParamsErr))
+		return
+	}
+
 	data := map[string]string{
-		"pub_key": user.GetPubKey(ctx),
+		"static_url": val.(string),
+		"pub_key":    user.GetPubKey(ctx),
 	}
 	response.RespDataWithNoEnc(ctx, data)
 	return

@@ -3,11 +3,12 @@ package response
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/pkg/utils/crypt"
 	walletutil "imsdk/internal/client/pkg/utils/wallet-util"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/internal/common/pkg/config"
+
+	"github.com/gin-gonic/gin"
 
 	//"imsdk/internal/bucket/model/copywriting"
 	"imsdk/pkg/encrypt"
@@ -71,6 +72,21 @@ func ResPubErr(ctx *gin.Context, err error) {
 	return
 }
 
+func ResEnData(ctx *gin.Context, data interface{}) {
+	byteData, _ := json.Marshal(data)
+	pubKey := ctx.Value(base.HeaderFieldPubKey).(string)
+	priKey, _ := config.GetConfigSk()
+	client, _ := walletutil.New(priKey)
+	key, _ := client.GetSharedSecret(pubKey)
+	res, _ := crypt.En(key, byteData)
+	resp := Response{
+		Code: errno.OK,
+		Msg:  "",
+		Data: res,
+	}
+	response(ctx, resp)
+	return
+}
 func ResData(ctx *gin.Context, data interface{}) {
 	resp := Response{
 		Code: errno.OK,
