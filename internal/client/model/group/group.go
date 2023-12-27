@@ -332,7 +332,16 @@ func InviteJoin(ctx context.Context, uid string, request InviteJoinRequest) erro
 		return errno.Add("user-not-exist", errno.UserNotExist)
 	}
 	groupMemberInfo, _ := members.New().GetGroupMember(request.GroupID)
-	ids, err := user2.New().GetInfoByStatus(request.UIds, []int{info.StatusDelete}, "_id,status")
+	var uids []string
+	encKeys := make(map[string]string)
+	if len(request.Items) == 0 {
+		return nil
+	}
+	for _, v := range request.Items {
+		uids = append(uids, v.UId)
+		encKeys[v.UId] = v.EncKey
+	}
+	ids, err := user2.New().GetInfoByStatus(uids, []int{info.StatusDelete}, "_id,status")
 	if err != nil {
 		return err
 	}
@@ -342,7 +351,7 @@ func InviteJoin(ctx context.Context, uid string, request InviteJoinRequest) erro
 			deleteIds = append(deleteIds, v.ID)
 		}
 	}
-	objUid := funcs.SliceMinus(request.UIds, deleteIds)
+	objUid := funcs.SliceMinus(uids, deleteIds)
 	if len(objUid) == 0 {
 		return errno.Add("user-status-delete", errno.UserDelete)
 	}
@@ -361,6 +370,7 @@ func InviteJoin(ctx context.Context, uid string, request InviteJoinRequest) erro
 			ID:        membersDao.GetId(v, request.GroupID),
 			GroupID:   request.GroupID,
 			UID:       v,
+			EncKey:    encKeys[v],
 			Role:      members.RoleCommonMember,
 			JoinType:  members.JoinTypeInvite,
 			InviteUID: uid,

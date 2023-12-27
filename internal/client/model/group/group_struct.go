@@ -51,8 +51,13 @@ type AgreeJoinRequest struct {
 }
 
 type InviteJoinRequest struct {
-	GroupID string   `json:"id" binding:"required"`
-	UIds    []string `json:"uids" binding:"required"`
+	GroupID string            `json:"id" binding:"required"`
+	Items   []InviteJoinItems `json:"items" binding:"required"`
+}
+
+type InviteJoinItems struct {
+	UId    string `json:"uid" binding:"required"`
+	EncKey string `json:"enc_key" binding:"required"`
 }
 
 type KickOutRequest struct {
