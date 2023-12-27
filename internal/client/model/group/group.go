@@ -527,6 +527,52 @@ func UpdateAvatar(ctx context.Context, uid string, request UpdateAvatarRequest) 
 	return nil
 }
 
+func UpdateCover(ctx context.Context, uid string, request UpdateCoverRequest) error {
+	_, err := verifyGroupAndIsAdministrator(uid, request.GroupID, true)
+	if err != nil {
+		return err
+	}
+	//var avatarMap map[string]interface{}
+	//err = json.Unmarshal([]byte(avatar), &avatar)
+	detailDao := detail.New()
+	data, _ := detailDao.GetByID(request.GroupID, "_id,cover")
+	if data.Cover == "" {
+		request.IsNotice = 0
+	}
+	uData := detail.Detail{
+		Cover:     request.Cover,
+		UpdatedAt: funcs.GetMillis(),
+	}
+
+	if err = detailDao.UpByID(request.GroupID, uData); err != nil {
+		return err
+	}
+	//err = changelogs.New().UpdateGroupInfo(request.GroupID)
+	//if err != nil {
+	//	// record error log
+	//}
+	//conf, _ := config.GetIMSdkKey()
+	//imsdkChat.NewClient(&imsdkChat.Options{
+	//	Credentials: imsdk.NewStaticCredentials(conf.AK, conf.SK),
+	//}).UpdateAvatar(request.GroupID, request.Avatar)
+
+	if request.IsNotice == 0 {
+		return nil
+	}
+	//sysMsgData := map[string]interface{}{
+	//	"operator": uid,
+	//	"target":   []string{},
+	//	"temId":    "mod-group-avatar",
+	//}
+	//actionData := map[string]interface{}{}
+	//// todo should use queue and must be send successfully
+	//
+	//if er := message.HollowManSendGroupSystemMsg(request.GroupID, sysMsgData, actionData); er != nil {
+	//	return er
+	//}
+	return nil
+}
+
 func UpdateNotice(ctx context.Context, uid string, request UpdateNoticeRequest) error {
 	groupInfo, err := verifyGroupAndIsAdministrator(uid, request.GroupID, true)
 	if err != nil {
@@ -708,7 +754,7 @@ func KickOutGroup(ctx context.Context, uid string, request KickOutRequest) error
 		return errno.Add("forbid", errno.FORBIDDEN)
 	}
 	// can not kick out administrator
-	allMembers := append(request.ObjUid, uid)
+	allMembers := append(request.UIds, uid)
 	memList, err := members.New().GetByGidAndUids(request.GroupID, allMembers, "id,role,uid,admin_time")
 	if err != nil {
 		return errno.Add("wrong-opt", errno.FORBIDDEN)
@@ -778,7 +824,7 @@ func KickOutGroup(ctx context.Context, uid string, request KickOutRequest) error
 	//}).Remove(gid, memArr)
 	chat.RemoveMember(ctx, chat.RemoveMembersParams{
 		ChatId: request.GroupID,
-		UIds:   request.ObjUid,
+		UIds:   request.UIds,
 	})
 	return nil
 }

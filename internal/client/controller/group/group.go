@@ -300,9 +300,7 @@ func ClearMessage(ctx *gin.Context) {
 
 func ApplyList(ctx *gin.Context) {
 	var params group.IdsRequest
-	data, _ := ctx.Get("data")
-	err := json.Unmarshal([]byte(data.(string)), &params)
-	if err != nil {
+	if err := ctx.ShouldBindJSON(&params); err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}

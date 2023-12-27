@@ -27,3 +27,19 @@ func UpdateAvatar(ctx *gin.Context) {
 	response.RespSuc(ctx)
 	return
 }
+
+func UpdateCover(ctx *gin.Context) {
+	var params group.UpdateCoverRequest
+	userId, _ := ctx.Get("uid")
+	if err := ctx.ShouldBindJSON(&params); err != nil {
+		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
+		return
+	}
+	err := group.UpdateCover(ctx, userId.(string), params)
+	if err != nil {
+		response.RespErr(ctx, err)
+		return
+	}
+	response.RespSuc(ctx)
+	return
+}

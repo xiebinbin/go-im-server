@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	json "github.com/json-iterator/go"
 	"imsdk/internal/client/model/group"
+	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
 )
@@ -65,8 +66,7 @@ func GetNotice(ctx *gin.Context) {
 
 func GetDesc(ctx *gin.Context) {
 	var params group.GetDescRequest
-	userId, _ := ctx.Get("uid")
-	uid := userId.(string)
+	uid := ctx.Value(base.HeaderFieldUID).(string)
 	if err := ctx.ShouldBindJSON(&params); err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return

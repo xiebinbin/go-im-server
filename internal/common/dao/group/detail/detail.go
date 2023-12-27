@@ -23,6 +23,7 @@ type Detail struct {
 	Desc        string `bson:"desc" json:"desc,omitempty"`
 	DescMd5     string `bson:"desc_md5" json:"desc_md5,omitempty"`
 	Avatar      string `bson:"avatar" json:"avatar,omitempty"`
+	Cover       string `bson:"cover" json:"cover,omitempty"`
 	Status      int8   `bson:"status" json:"status,omitempty"`
 	Total       int    `bson:"total" json:"total,omitempty"`
 	MemberLimit int    `bson:"member_limit" json:"member_limit,omitempty"`

@@ -57,7 +57,7 @@ type InviteJoinRequest struct {
 
 type KickOutRequest struct {
 	GroupID string   `json:"id" binding:"required"`
-	ObjUid  []string `json:"obj_uid" binding:"required"`
+	UIds    []string `json:"uids" binding:"required"`
 }
 
 type UpdateNameRequest struct {
@@ -68,6 +68,12 @@ type UpdateNameRequest struct {
 type UpdateAvatarRequest struct {
 	GroupID  string `json:"id" binding:"required"`
 	Avatar   string `json:"avatar" binding:"required"`
+	IsNotice int8   `json:"is_notice"`
+}
+
+type UpdateCoverRequest struct {
+	GroupID  string `json:"id" binding:"required"`
+	Cover    string `json:"cover"`
 	IsNotice int8   `json:"is_notice"`
 }
 

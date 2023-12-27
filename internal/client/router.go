@@ -86,6 +86,7 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/group/updateName", group.UpdateName)
 	engine.POST("/group/updateAlias", group.UpdateAlias)
 	engine.POST("/group/updateAvatar", group.UpdateAvatar)
+	engine.POST("/group/updateCover", group.UpdateCover)
 	engine.POST("/group/updateNotice", group.UpdateNotice)
 	engine.POST("/group/getNotice", group.GetNotice)
 	engine.POST("/group/updateDesc", group.UpdateNotice)
