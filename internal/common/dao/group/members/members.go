@@ -73,6 +73,7 @@ type EncInfoResponse struct {
 type ApplyRes struct {
 	ID        string `bson:"_id" json:"id"`
 	GID       string `bson:"gid" json:"gid"`
+	UID       string `bson:"uid" json:"uid"`
 	Avatar    string `bson:"avatar" json:"avatar,omitempty"`
 	Name      string `bson:"name" json:"name,omitempty"`
 	EncKey    string `bson:"enc_key" json:"enc_key"`
@@ -241,6 +242,19 @@ func (m Members) GetMyGroupIdList(uid string) ([]GroupIDsRes, error) {
 	return res, nil
 }
 
+func (m Members) GetApplyByGIds(gIds []string, status []int8) ([]ApplyRes, error) {
+	res := make([]ApplyRes, 0)
+	where := bson.M{"gid": bson.M{"$in": gIds}}
+	if len(status) > 0 {
+		where["status"] = bson.M{"$in": status}
+	}
+	err := m.collection().Where(where).FindMany(&res)
+	if err != nil {
+		return res, err
+	}
+	return res, nil
+}
+
 func (m Members) GetMyGroupByIds(uid string, ids []string) ([]ApplyRes, error) {
 	res := make([]ApplyRes, 0)
 	where := bson.M{"uid": uid}
@@ -251,20 +265,20 @@ func (m Members) GetMyGroupByIds(uid string, ids []string) ([]ApplyRes, error) {
 	return res, nil
 }
 
-func (m Members) GetListsByStatusAndRole(uid string, ids []string, status []int8, role []uint8) ([]ApplyRes, error) {
+func (m Members) GetListsByStatusAndRole(uid string, ids []string, status []int8, role []int8) ([]ApplyRes, error) {
 	res := make([]ApplyRes, 0)
 	where := bson.M{"uid": uid}
 	if len(ids) > 0 {
 		where["gid"] = bson.M{"$in": ids}
 	}
-	if len(status) >= 0 {
+
+	if len(status) > 0 {
 		where["status"] = bson.M{"$in": status}
 	}
-
-	if len(role) >= 0 {
+	if len(role) > 0 {
 		where["role"] = bson.M{"$in": role}
 	}
-	m.collection(mongo.SecondaryPreferredMode).Where(where).FindMany(&res)
+	m.collection().Where(where).FindMany(&res)
 	return res, nil
 }
 
