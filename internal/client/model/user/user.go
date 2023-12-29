@@ -6,6 +6,7 @@ import (
 	user2 "imsdk/internal/common/model/user"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/errno"
+	"imsdk/pkg/funcs"
 	"imsdk/pkg/redis"
 	"time"
 )
@@ -57,7 +58,8 @@ func verifyGetConnectInfo(ctx context.Context, params user2.GetConnectInfoReques
 func UpdateName(ctx context.Context, request UpdateNameRequest) error {
 	uid := ctx.Value(base.HeaderFieldUID).(string)
 	err := user.New().Update(uid, user.User{
-		Name: request.Name,
+		Name:      request.Name,
+		NameIndex: funcs.GetFirstLetter(request.Name),
 	})
 	if err != nil {
 		return errno.Add("sys-err", errno.SysErr)

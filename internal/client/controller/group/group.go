@@ -75,11 +75,15 @@ func GetEncInfoByIds(ctx *gin.Context) {
 	}
 	uid := ctx.Value(base.HeaderFieldUID).(string)
 	res, er := group.GetEncInfoByIds(ctx, uid, params)
+	fmt.Println("group.GetEncInfoByIds&&&&&", res)
 	if er != nil {
 		response.RespErr(ctx, er)
 		return
 	}
-	response.RespListData(ctx, res)
+
+	response.ResEnData(ctx, map[string]interface{}{
+		"items": res,
+	})
 	return
 }
 

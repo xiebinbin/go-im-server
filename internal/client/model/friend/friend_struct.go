@@ -5,8 +5,9 @@ type GetRelationInfoResponse struct {
 	IsFriend int8   `json:"is_friend"`
 	Name     string `json:"name"`
 	Avatar   string `json:"avatar"`
-	Gender   string `json:"gender"`
+	Gender   int8   `json:"gender"`
 	Sign     string `json:"sign"`
+	Desc     string `json:"desc"`
 }
 
 type DeleteFriendsRequest struct {

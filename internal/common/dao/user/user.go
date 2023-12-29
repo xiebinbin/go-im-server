@@ -2,20 +2,22 @@ package user
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	mongoDriver "go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"imsdk/internal/common/dao"
 	"imsdk/pkg/database/mongo"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/funcs"
+
+	"go.mongodb.org/mongo-driver/bson"
+	mongoDriver "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type User struct {
 	ID        string `bson:"_id" json:"address"`
 	Avatar    string `bson:"avatar" json:"avatar"`
 	Name      string `bson:"name" json:"name"`
-	Gender    string `bson:"gender" json:"gender"` // 0-未知 1-男 2-女
+	NameIndex string `bson:"name_index" json:"name_index"`
+	Gender    int8   `bson:"gender" json:"gender"` // 0-未知 1-男 2-女
 	Sign      string `bson:"sign" json:"sign"`
 	PubKey    string `bson:"pub_key" json:"pub_key"`
 	Status    int8   `bson:"status" json:"status"`
@@ -24,12 +26,13 @@ type User struct {
 }
 
 type ListResponse struct {
-	ID     string `bson:"_id" json:"id"`
-	Avatar string `bson:"avatar" json:"avatar"`
-	Name   string `bson:"name" json:"name"`
-	PubKey string `bson:"pub_key" json:"pub_key"`
-	Gender string `bson:"gender" json:"gender"` // 0-未知 1-男 2-女
-	Sign   string `bson:"sign" json:"sign"`
+	ID        string `bson:"_id" json:"id"`
+	Avatar    string `bson:"avatar" json:"avatar"`
+	Name      string `bson:"name" json:"name"`
+	NameIndex string `bson:"name_index" json:"name_index"`
+	PubKey    string `bson:"pub_key" json:"pub_key"`
+	Gender    int8   `bson:"gender" json:"gender"` // 0-未知 1-男 2-女
+	Sign      string `bson:"sign" json:"sign"`
 }
 
 const (

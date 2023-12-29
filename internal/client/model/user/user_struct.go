@@ -19,7 +19,7 @@ type UpdateAvatarRequest struct {
 }
 
 type UpdateGenderRequest struct {
-	Gender string `json:"gender" binding:"required"`
+	Gender int8 `json:"gender" binding:"required"`
 }
 
 type UpdateSignRequest struct {

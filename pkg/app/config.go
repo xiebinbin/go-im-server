@@ -2,8 +2,6 @@ package app
 
 import (
 	"errors"
-	"github.com/BurntSushi/toml"
-	jsoniter "github.com/json-iterator/go"
 	"imsdk/pkg/funcs"
 	"io/ioutil"
 	"log"
@@ -11,6 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/BurntSushi/toml"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // Configuration 应用配置
@@ -67,9 +68,9 @@ func (conf *Configuration) walk(path string, info os.FileInfo, err error) error 
 }
 
 func (conf *Configuration) GetPublicConfigDir() string {
-	rootDir := funcs.GetRoot()
-	pubConfDir := rootDir + "/config/"
-	return pubConfDir
+	// rootDir := funcs.GetRoot()
+	// pubConfDir := rootDir + "/config/"
+	return "./config/"
 }
 
 func (conf *Configuration) GetConfigDirs() []string {
@@ -109,9 +110,10 @@ func (conf *Configuration) singleLoad() *Configuration {
 }
 
 // Bind 将配置绑定到传入对象
-//  node 其实是配置文件的文件名
-//  key 是配置文件中的顶层key
-//  具体可查看该方法的其他包的使用
+//
+//	node 其实是配置文件的文件名
+//	key 是配置文件中的顶层key
+//	具体可查看该方法的其他包的使用
 func (conf *Configuration) Bind(node, key string, obj interface{}) error {
 	nodeVal, ok := conf.configs[node]
 	if !ok {

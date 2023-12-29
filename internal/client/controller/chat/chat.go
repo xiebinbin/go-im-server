@@ -1,11 +1,12 @@
 package chat
 
 import (
-	"github.com/gin-gonic/gin"
 	"imsdk/internal/common/model/chat"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 type IdRequest = chat.GetMembersParams

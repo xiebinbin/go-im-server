@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
@@ -27,6 +28,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/mozillazg/go-pinyin"
 	"github.com/syyongx/php2go"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
@@ -568,4 +570,27 @@ func GetStaticUrl(path string) string {
 		return StaticUrl + path
 	}
 	return path
+}
+
+func GetFirstLetter(s string) string {
+	// 使用正则表达式判断首字符是否是字母
+	isLetter, _ := regexp.MatchString("^[A-Za-z]", s)
+
+	if isLetter {
+		// 如果首字符是字母，则直接返回
+		return s[:1]
+	} else {
+		// 如果首字符是汉字，则转为拼音再取首字母
+		pinyinResult := pinyin.Pinyin(s, pinyin.NewArgs())
+		if len(pinyinResult) > 0 {
+			firstPinyin := pinyinResult[0][0]
+			if isLetter, _ := regexp.MatchString("^[A-Za-z]", firstPinyin); isLetter {
+				return firstPinyin[:1]
+			} else {
+				return "#"
+			}
+		} else {
+			return "#"
+		}
+	}
 }

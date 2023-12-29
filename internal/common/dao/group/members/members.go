@@ -66,6 +66,7 @@ type BaseInfoResponse struct {
 }
 
 type EncInfoResponse struct {
+	GID    string `bson:"gid" json:"gid"`
 	EncPri string `bson:"enc_pri" json:"enc_pri,omitempty"`
 	EncKey string `bson:"enc_key" json:"enc_key,omitempty"`
 }

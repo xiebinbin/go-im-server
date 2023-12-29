@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/common/dao/user"
 	"imsdk/internal/common/dao/user/infov2/info"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/internal/common/pkg/config"
 	"imsdk/pkg/errno"
 	"imsdk/pkg/funcs"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type GetUIdsParams struct {
@@ -51,6 +52,7 @@ func RegUser(ctx context.Context) (user.User, error) {
 		PubKey:    pubKey,
 		Avatar:    "https://img1.baidu.com/it/u=3709586903,1286591012&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
 		Name:      funcs.GetRandString(6),
+		Gender:    2,
 		CreatedAt: funcs.GetMillis(),
 	}
 	//err := user.New().Init()

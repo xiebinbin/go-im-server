@@ -2,10 +2,11 @@ package contacts
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"imsdk/internal/client/model/friend"
 	"imsdk/internal/common/pkg/base"
 	"imsdk/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RelationRequest struct {
