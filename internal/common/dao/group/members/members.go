@@ -169,6 +169,7 @@ func (m Members) UpByID(id string, uData Members) bool {
 
 func (m Members) UpByIDs(ids []string, uData Members) error {
 	_, err := m.collection().Where(bson.M{"_id": bson.M{"$in": ids}}).UpdateMany(&uData)
+	fmt.Println("err:", ids, err)
 	return err
 }
 

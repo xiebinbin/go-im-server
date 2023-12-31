@@ -290,6 +290,7 @@ func AdminAgreeJoin(ctx context.Context, uid string, request AgreeJoinRequest) e
 		return err
 	}
 	dao := members.New()
+	request.UIds = append(request.UIds, request.UID)
 	if len(request.UIds) > 0 {
 		var ids []string
 		for _, s := range request.UIds {
