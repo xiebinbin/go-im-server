@@ -65,7 +65,6 @@ func MyApplyList(ctx context.Context, uid string, request IdsRequest) ([]members
 func ApplyList(ctx context.Context, uid string, request IdsRequest) ([]ApplyListResponse, error) {
 	dao := members.New()
 	groupMembers, _ := dao.GetListsByStatusAndRole(uid, request.Ids, []int8{}, []int8{int8(members.RoleOwner), int8(members.RoleAdministrator)})
-	fmt.Println("groupMembers: ", groupMembers)
 	ids := make([]string, 0)
 	if len(groupMembers) > 0 {
 		for _, v := range groupMembers {
