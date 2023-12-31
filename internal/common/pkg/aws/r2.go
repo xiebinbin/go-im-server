@@ -46,10 +46,10 @@ func GetR2Client() *s3.Client {
 
 func GetPreSignURL(client *s3.Client, bucketName string, key string) string {
 	presignClient := s3.NewPresignClient(client)
+
 	presignResult, err := presignClient.PresignPutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(key),
-		//Expires: aws.Time(time.Now().Add(15 * time.Second)), // 15 minutes
 	})
 
 	if err != nil {
