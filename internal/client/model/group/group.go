@@ -285,7 +285,7 @@ func QuitGroup(ctx context.Context, uid string, request QuitRequest) error {
 }
 
 func AdminAgreeJoin(ctx context.Context, uid string, request AgreeJoinRequest) error {
-	_, err := verifyGroupAndIsOwner(uid, request.GroupID, true)
+	_, err := verifyGroupAndIsAdministrator(uid, request.GroupID, true)
 	if err != nil {
 		return err
 	}
@@ -335,7 +335,7 @@ func RejectJoin(ctx context.Context, uid string, request RejectJoinRequest) erro
 		for _, s := range request.UIds {
 			ids = append(ids, dao.GetId(s, request.GroupId))
 		}
-		err := dao.UpByIDs(ids, members.Members{
+		err = dao.UpByIDs(ids, members.Members{
 			Status: members.StatusRefuse,
 		})
 		if err != nil {
@@ -1092,7 +1092,6 @@ func ChangeGroupStatus(uid, gid string, status int8) error {
 //}
 
 func Join(ctx context.Context, uid string, request JoinRequest) error {
-	fmt.Println("join group", uid, request.GroupID, request.QrID)
 	groupInfo, err := detail.New().GetByID(request.GroupID, "id,status,total")
 	if err != nil || groupInfo.ID == "" || groupInfo.Status != detail.StatusYes {
 		return errno.Add("group-not-exist", errno.DataNotExist)
@@ -1104,13 +1103,12 @@ func Join(ctx context.Context, uid string, request JoinRequest) error {
 	// verify qr code is expire
 
 	memDao := members.New()
-	oldInfo, err := memDao.GetByUidAndGid(uid, request.GroupID, "id,role,status")
-	if err == nil {
-		fmt.Println("oldInfo", oldInfo)
+	oldInfo, er := memDao.GetByUidAndGid(uid, request.GroupID, "id,role,status")
+	if er == nil {
+		fmt.Println("oldInfo:", oldInfo, uid, request.GroupID)
 		if oldInfo.Status == members.StatusYes || oldInfo.Status == members.StatusIng {
 			return nil
 		}
-		fmt.Println("更新", oldInfo.Status)
 		// 更新状态
 
 		fmt.Println(memDao.UpByID(oldInfo.ID, members.Members{
@@ -1123,6 +1121,7 @@ func Join(ctx context.Context, uid string, request JoinRequest) error {
 		return nil
 	}
 	isExist := memDao.IsExist(uid, request.GroupID)
+	fmt.Println("isExist:", isExist)
 	if isExist {
 		return nil
 	}

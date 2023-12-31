@@ -152,6 +152,7 @@ func (m Members) AddMany(data []Members) error {
 
 func (m Members) AddOne(data Members) bool {
 	_, err := m.collection().InsertOne(&data)
+	fmt.Println("item:", data, err)
 	return err == nil
 }
 
@@ -348,7 +349,7 @@ func (m Members) GetEncInfoByIds(gids, uids []string) ([]EncInfoResponse, error)
 
 func (m Members) IsExist(uid, gid string) bool {
 	where := bson.M{"_id": m.GetId(uid, gid)}
-	count := m.collection(mongo.SecondaryPreferredMode).Where(where).Count()
+	count := m.collection().Where(where).Count()
 	return count > 0
 }
 

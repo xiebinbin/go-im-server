@@ -71,6 +71,7 @@ func ApplyList(ctx context.Context, uid string, request IdsRequest) ([]ApplyList
 			ids = append(ids, v.GID)
 		}
 	}
+	fmt.Println("groupMembers:", groupMembers, ids)
 	applyItems, _ := dao.GetApplyByGIds(ids, []int8{members.StatusIng, members.StatusRefuse})
 	fmt.Println("applyItems: ", applyItems)
 	res := make([]ApplyListResponse, 0)
