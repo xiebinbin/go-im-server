@@ -769,7 +769,23 @@ func GetMembersInfo(ctx context.Context, uid string, request MembersRequest) ([]
 }
 
 func GetMembersByIds(ctx context.Context, uid string, request GetMembersByIdsRequest) ([]members.GroupMembersInfoRes, error) {
-	return members.New().GetMembersByIds(request.GroupIds, request.UIds)
+	res := make([]members.GroupMembersInfoRes, 0)
+	data, err := members.New().GetMembersByIds(request.GroupIds, request.UIds)
+	if err != nil {
+		return res, err
+	}
+	var uids []string
+	for _, datum := range data {
+		uids = append(uids, datum.UID)
+	}
+	uInfos, _ := user2.New().GetInfoByIds(uids)
+	for _, datum := range data {
+		datum.Avatar = uInfos[datum.UID].Avatar
+		datum.Name = uInfos[datum.UID].Name
+		datum.PubKey = uInfos[datum.UID].PubKey
+		res = append(res, datum)
+	}
+	return res, nil
 }
 
 func GetEncInfoByIds(ctx context.Context, uid string, request IdsRequest) ([]members.EncInfoResponse, error) {

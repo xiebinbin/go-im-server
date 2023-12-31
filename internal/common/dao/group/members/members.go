@@ -54,7 +54,9 @@ type GroupMembersInfoRes struct {
 	GID      string `bson:"gid" json:"gid"`
 	Role     uint8  `bson:"role" json:"role"`
 	Avatar   string `bson:"avatar" json:"avatar,omitempty"`
-	MyAlias  string `bson:"my_alias" json:"my_alias,omitempty"`
+	Name     string `bson:"name" json:"name,omitempty"`
+	PubKey   string `bson:"pub_key" json:"pub_key,omitempty"`
+	MyAlias  string `bson:"my_alias" json:"my_alias"`
 	AdminAt  int64  `bson:"admin_time" json:"admin_time,omitempty"`
 	CreateAt int64  `bson:"create_time" json:"create_time,omitempty"`
 	Status   int8   `bson:"status" json:"status"`
