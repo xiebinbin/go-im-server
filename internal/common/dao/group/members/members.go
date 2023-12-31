@@ -169,7 +169,6 @@ func (m Members) UpByID(id string, uData Members) bool {
 
 func (m Members) UpByIDs(ids []string, uData Members) error {
 	_, err := m.collection().Where(bson.M{"_id": bson.M{"$in": ids}}).UpdateMany(&uData)
-	fmt.Println("err:", ids, err)
 	return err
 }
 
@@ -324,11 +323,11 @@ func (m Members) GetMembersInfo(gid string, uids []string) ([]GroupMembersInfoRe
 func (m Members) GetMembersByIds(gids, uids []string) ([]GroupMembersInfoRes, error) {
 	data := make([]GroupMembersInfoRes, 0)
 	fields := dao.GetMongoFieldsBsonByString("_id,uid,gid,role,my_alias,admin_time,create_time,status")
-	where := bson.M{"gid": bson.M{"$in": gids}}
+	where := bson.M{"gid": bson.M{"$in": gids}, "status": StatusYes}
 	if len(uids) != 0 {
 		where["uid"] = bson.M{"$in": uids}
 	}
-	err := m.collection(mongo.SecondaryPreferredMode).Where(where).Fields(fields).FindMany(&data)
+	err := m.collection().Where(where).Fields(fields).FindMany(&data)
 	if err != nil {
 		return nil, err
 	}

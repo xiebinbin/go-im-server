@@ -49,9 +49,7 @@ func GetMembersInfo(ctx *gin.Context) {
 
 func GetMembersByIds(ctx *gin.Context) {
 	var params group.GetMembersByIdsRequest
-	data, _ := ctx.Get("data")
-	err := json.Unmarshal([]byte(data.(string)), &params)
-	if err != nil {
+	if err := ctx.ShouldBindJSON(&params); err != nil {
 		response.RespErr(ctx, errno.Add("params-err", errno.ParamsErr))
 		return
 	}
@@ -61,15 +59,7 @@ func GetMembersByIds(ctx *gin.Context) {
 		response.RespErr(ctx, er)
 		return
 	}
-	// res
-	// 过滤出 Status = 1 的数据
-	var dataRes []members.GroupMembersInfoRes
-	for _, v := range res {
-		if v.Status == 1 {
-			dataRes = append(dataRes, v)
-		}
-	}
-	response.RespListData(ctx, dataRes)
+	response.RespListData(ctx, res)
 	return
 }
 
