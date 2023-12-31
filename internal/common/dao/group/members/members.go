@@ -23,11 +23,11 @@ type Members struct {
 	InviteUID string `bson:"invite_uid" json:"invite_uid,omitempty"`
 	Role      uint8  `bson:"role" json:"role,omitempty"`
 	JoinType  uint8  `bson:"join_type" json:"join_type,omitempty"`
-	MyAlias   string `bson:"my_alias" json:"my_alias,omitempty"`
+	MyAlias   string `bson:"my_alias" json:"my_alias"`
 	AdminAt   int64  `bson:"admin_time" json:"admin_time,omitempty"`
 	CreatedAt int64  `bson:"create_time" json:"create_time,omitempty"`
-	UpdatedAt int64  `bson:"update_time" json:"update_time,omitempty"`
-	Status    int8   `bson:"status" json:"status,omitempty"`
+	UpdatedAt int64  `bson:"update_time" json:"update_time"`
+	Status    int8   `bson:"status" json:"status"`
 }
 
 type MyGroupRes struct {
@@ -57,6 +57,7 @@ type GroupMembersInfoRes struct {
 	MyAlias  string `bson:"my_alias" json:"my_alias,omitempty"`
 	AdminAt  int64  `bson:"admin_time" json:"admin_time,omitempty"`
 	CreateAt int64  `bson:"create_time" json:"create_time,omitempty"`
+	Status   int8   `bson:"status" json:"status"`
 }
 
 type BaseInfoResponse struct {
@@ -66,6 +67,7 @@ type BaseInfoResponse struct {
 }
 
 type EncInfoResponse struct {
+	GID    string `bson:"gid" json:"gid"`
 	EncPri string `bson:"enc_pri" json:"enc_pri,omitempty"`
 	EncKey string `bson:"enc_key" json:"enc_key,omitempty"`
 }
@@ -93,7 +95,7 @@ const (
 	JoinTypeSelf   = 1
 )
 const (
-	StatusIng, StatusYes, StatusRefuse = 0, 1, 2
+	StatusIng, StatusYes, StatusRefuse = 1, 2, 3
 )
 
 func New() *Members {
@@ -152,7 +154,13 @@ func (m Members) AddOne(data Members) bool {
 }
 
 func (m Members) UpByID(id string, uData Members) bool {
-	_, err := m.collection().UpByID(id, uData)
+	x, err := m.collection().Where(bson.M{
+		"_id": id,
+	}).UpdateOne(uData)
+	fmt.Println("UpByID x", x.ModifiedCount)
+	fmt.Println("UpByID err", err)
+	fmt.Println("UpByID id", id)
+	fmt.Println("UpByID uData", uData)
 	return err == nil
 }
 
@@ -249,6 +257,7 @@ func (m Members) GetApplyByGIds(gIds []string, status []int8) ([]ApplyRes, error
 		where["status"] = bson.M{"$in": status}
 	}
 	err := m.collection().Where(where).FindMany(&res)
+	fmt.Println("GetApplyByGIds: ", where, res)
 	if err != nil {
 		return res, err
 	}
@@ -278,6 +287,7 @@ func (m Members) GetListsByStatusAndRole(uid string, ids []string, status []int8
 	if len(role) > 0 {
 		where["role"] = bson.M{"$in": role}
 	}
+	fmt.Println("where: ", where)
 	m.collection().Where(where).FindMany(&res)
 	return res, nil
 }
@@ -310,7 +320,7 @@ func (m Members) GetMembersInfo(gid string, uids []string) ([]GroupMembersInfoRe
 
 func (m Members) GetMembersByIds(gids, uids []string) ([]GroupMembersInfoRes, error) {
 	data := make([]GroupMembersInfoRes, 0)
-	fields := dao.GetMongoFieldsBsonByString("_id,uid,gid,role,my_alias,admin_time,create_time")
+	fields := dao.GetMongoFieldsBsonByString("_id,uid,gid,role,my_alias,admin_time,create_time,status")
 	where := bson.M{"gid": bson.M{"$in": gids}}
 	if len(uids) != 0 {
 		where["uid"] = bson.M{"$in": uids}

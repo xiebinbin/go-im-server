@@ -2,26 +2,28 @@ package friend
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/common/dao"
 	"imsdk/pkg/app"
 	"imsdk/pkg/database/mongo"
 	"imsdk/pkg/funcs"
+
+	"go.mongodb.org/mongo-driver/bson"
+	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
 type Friend struct {
-	ID        string `bson:"_id" json:"id"`
-	UId       string `bson:"uid" json:"uid,omitempty"`
-	ObjUId    string `bson:"obj_uid" json:"obj_uid,omitempty"`
-	Remark    string `bson:"remark" json:"remark,omitempty"`
-	Status    int8   `bson:"status" json:"status,omitempty"`
-	IsStar    int8   `bson:"is_star" json:"is_star,omitempty"`
-	Rank      int8   `bson:"rank" json:"rank,omitempty"`
-	ApplyUID  string `bson:"apply_uid" json:"apply_uid,omitempty"`
-	AgreeAt   int64  `bson:"agree_time" json:"agree_time,omitempty"`
-	CreatedAt int64  `bson:"create_time" json:"create_time,omitempty"`
-	UpdatedAt int64  `bson:"update_time" json:"update_time,omitempty"`
+	ID          string `bson:"_id" json:"id"`
+	UId         string `bson:"uid" json:"uid,omitempty"`
+	ObjUId      string `bson:"obj_uid" json:"obj_uid,omitempty"`
+	RemarkIndex string `bson:"remark_index" json:"remark_index,omitempty"`
+	Remark      string `bson:"remark" json:"remark,omitempty"`
+	Status      int8   `bson:"status" json:"status,omitempty"`
+	IsStar      int8   `bson:"is_star" json:"is_star,omitempty"`
+	Rank        int8   `bson:"rank" json:"rank,omitempty"`
+	ApplyUID    string `bson:"apply_uid" json:"apply_uid,omitempty"`
+	AgreeAt     int64  `bson:"agree_time" json:"agree_time,omitempty"`
+	CreatedAt   int64  `bson:"create_time" json:"create_time,omitempty"`
+	UpdatedAt   int64  `bson:"update_time" json:"update_time,omitempty"`
 }
 
 const (
@@ -80,7 +82,7 @@ func (f *Friend) GetFriendIds(uid string) ([]string, error) {
 	return res, nil
 }
 
-func (f *Friend) GetFriendInfos(uid string, objUIds []string) ([]string, map[string]string, error) {
+func (f *Friend) GetFriendInfos(uid string, objUIds []string) ([]string, map[string]string, map[string]string, error) {
 	var data []Friend
 	where := bson.M{"uid": uid, "status": StatusYes}
 	if len(objUIds) != 0 {
@@ -88,18 +90,20 @@ func (f *Friend) GetFriendInfos(uid string, objUIds []string) ([]string, map[str
 	}
 	err := f.Collection().Where(where).Fields(bson.M{"obj_uid": 1}).Sort(bson.M{"update_time": -1}).FindMany(&data)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	res := make([]string, 0)
 	remarkInfo := make(map[string]string)
+	remarkIndexInfo := make(map[string]string)
 	if data == nil {
-		return res, remarkInfo, nil
+		return res, remarkInfo, remarkIndexInfo, nil
 	}
 	for _, v := range data {
 		res = append(res, v.ObjUId)
 		remarkInfo[v.ObjUId] = v.Remark
+		remarkIndexInfo[v.ObjUId] = v.RemarkIndex
 	}
-	return res, remarkInfo, nil
+	return res, remarkInfo, remarkIndexInfo, nil
 }
 
 func (f *Friend) GetMineByFriendIds(uid string, ObjUIds []string) []string {

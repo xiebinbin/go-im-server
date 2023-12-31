@@ -21,14 +21,16 @@ type Friend struct {
 }
 
 type GetFriendListsResponse struct {
-	UId    string `json:"uid"`
-	ChatId string `json:"chat_id"`
-	Remark string `json:"remark"`
-	PubKey string `json:"pub_key"`
-	Avatar string `json:"avatar"`
-	Name   string `json:"name"`
-	Gender string `json:"gender"`
-	Sign   string `json:"sign"`
+	UId         string `json:"uid"`
+	ChatId      string `json:"chat_id"`
+	RemarkIndex string `json:"remark_index"`
+	Remark      string `json:"remark"`
+	PubKey      string `json:"pub_key"`
+	Avatar      string `json:"avatar"`
+	Name        string `json:"name"`
+	NameIndex   string `json:"name_index"`
+	Gender      int8   `json:"gender"`
+	Sign        string `json:"sign"`
 }
 
 func GetFriendsIds(uid string) []string {
@@ -37,7 +39,7 @@ func GetFriendsIds(uid string) []string {
 }
 
 func GetFriendLists(ctx context.Context, uid string, request ListFriendsRequest) []GetFriendListsResponse {
-	uIds, remarkInfo, _ := friend2.New().GetFriendInfos(uid, request.UIds)
+	uIds, remarkInfo, remarkIndexInfo, _ := friend2.New().GetFriendInfos(uid, request.UIds)
 	res := make([]GetFriendListsResponse, 0)
 	if len(uIds) == 0 {
 		return res
@@ -45,14 +47,16 @@ func GetFriendLists(ctx context.Context, uid string, request ListFriendsRequest)
 	uInfos, _ := user.New().GetByIDs(uIds)
 	for _, datum := range uInfos {
 		res = append(res, GetFriendListsResponse{
-			UId:    datum.ID,
-			Remark: remarkInfo[datum.ID],
-			ChatId: funcs.CreateSingleChatId(uid, datum.ID),
-			PubKey: datum.PubKey,
-			Avatar: datum.Avatar,
-			Name:   datum.Name,
-			Gender: datum.Gender,
-			Sign:   datum.Sign,
+			UId:         datum.ID,
+			RemarkIndex: remarkIndexInfo[datum.ID],
+			Remark:      remarkInfo[datum.ID],
+			ChatId:      funcs.CreateSingleChatId(uid, datum.ID),
+			PubKey:      datum.PubKey,
+			Avatar:      datum.Avatar,
+			Name:        datum.Name,
+			NameIndex:   datum.NameIndex,
+			Gender:      datum.Gender,
+			Sign:        datum.Sign,
 		})
 	}
 	return res
@@ -145,7 +149,8 @@ func DelAllBilateral(ctx context.Context, uid string) error {
 
 func UpdateRemark(ctx context.Context, uid string, request UpdateRemarkRequest) error {
 	upData := map[string]interface{}{
-		"remark": request.Remark,
+		"remark":       request.Remark,
+		"remark_index": funcs.GetFirstLetter(request.Remark),
 	}
 	_, err := friend2.New().UpdateRemark(uid, request.Remark, upData)
 	return err

@@ -49,6 +49,10 @@ type AgreeJoinRequest struct {
 	GroupID string   `json:"id" binding:"required"`
 	UIds    []string `json:"uids" binding:"required"`
 }
+type RejectJoinRequest struct {
+	UIds    []string `json:"uids" binding:"required"`
+	GroupId string   `json:"group_id" binding:"required"`
+}
 
 type InviteJoinRequest struct {
 	GroupID string            `json:"id" binding:"required"`
