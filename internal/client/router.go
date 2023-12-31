@@ -74,7 +74,9 @@ func GetEngine(engine *gin.Engine) {
 	engine.POST("/group/join", group.Join)
 	engine.POST("/group/inviteJoin", group.InviteJoin)
 	engine.POST("/group/adminAgree", group.AdminAgreeJoin)
-	engine.POST("/group/agree", group.AgreeJoin)
+	engine.POST("/group/agreeInvite", group.AgreeInvite)
+	// 拒绝邀请
+	engine.POST("/group/rejectJoin", group.RejectJoin)
 	engine.POST("/group/quit", group.Quit)
 	engine.POST("/group/quitByIds", group.QuitByIds)
 	engine.POST("/group/quitAll", group.QuitAll)

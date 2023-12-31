@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/common/dao/chat/changelogs"
 	user2 "imsdk/internal/common/dao/user"
 	"imsdk/internal/common/dao/user/infov2/info"
@@ -14,6 +13,8 @@ import (
 	"imsdk/pkg/redis"
 	"sort"
 	"strings"
+
+	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 
 	"imsdk/internal/common/dao/group/detail"
 	"imsdk/internal/common/dao/group/members"
@@ -322,7 +323,27 @@ func AgreeJoin(ctx context.Context, uid string, request AgreeJoinRequest) error 
 	}
 	return nil
 }
-
+func RejectJoin(ctx context.Context, uid string, request RejectJoinRequest) error {
+	dao := members.New()
+	// 判断是否是群主
+	_, err := verifyGroupAndIsOwner(uid, request.GroupId, true)
+	if err != nil {
+		return err
+	}
+	if len(request.UIds) > 0 {
+		var ids []string
+		for _, s := range request.UIds {
+			ids = append(ids, dao.GetId(s, request.GroupId))
+		}
+		err := dao.UpByIDs(ids, members.Members{
+			Status: members.StatusRefuse,
+		})
+		if err != nil {
+			return errno.Add("sys-err", errno.SysErr)
+		}
+	}
+	return nil
+}
 func InviteJoin(ctx context.Context, uid string, request InviteJoinRequest) error {
 	groupInfo, err := detail.New().GetByID(request.GroupID, "id,status,total")
 	if err != nil || groupInfo.ID == "" || groupInfo.Status != detail.StatusYes {
@@ -1083,6 +1104,24 @@ func Join(ctx context.Context, uid string, request JoinRequest) error {
 	// verify qr code is expire
 
 	memDao := members.New()
+	oldInfo, err := memDao.GetByUidAndGid(uid, request.GroupID, "id,role,status")
+	if err == nil {
+		fmt.Println("oldInfo", oldInfo)
+		if oldInfo.Status == members.StatusYes || oldInfo.Status == members.StatusIng {
+			return nil
+		}
+		fmt.Println("更新", oldInfo.Status)
+		// 更新状态
+
+		fmt.Println(memDao.UpByID(oldInfo.ID, members.Members{
+			Status:    members.StatusIng,
+			UpdatedAt: funcs.GetMillis(),
+		}))
+		// 提交mongo的更新
+
+		// detail.New().UpTotal(request.GroupID, 1)
+		return nil
+	}
 	isExist := memDao.IsExist(uid, request.GroupID)
 	if isExist {
 		return nil
@@ -1110,12 +1149,13 @@ func Join(ctx context.Context, uid string, request JoinRequest) error {
 		return errno.Add("fail", errno.DefErr)
 	}
 
-	detail.New().UpTotal(request.GroupID, 1)
+	// detail.New().UpTotal(request.GroupID, 1)
 	// join chat
-	err = chat.JoinChat(context.Background(), chat.JoinChatParams{
-		ChatId: request.GroupID,
-		UIds:   []string{uid},
-	})
+	// err = chat.JoinChat(context.Background(), chat.JoinChatParams{
+	// 	ChatId: request.GroupID,
+	// 	UIds:   []string{uid},
+	// })
+	// 接受才加入
 	if err != nil {
 		return err
 	}

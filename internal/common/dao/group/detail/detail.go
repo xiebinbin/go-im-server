@@ -3,13 +3,14 @@ package detail
 import (
 	"encoding/json"
 	"errors"
-	"go.mongodb.org/mongo-driver/bson"
-	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/common/dao"
 	"imsdk/pkg/database/mongo"
 	"imsdk/pkg/funcs"
 	"imsdk/pkg/redis"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
 type Detail struct {
@@ -37,7 +38,7 @@ type ListResponse struct {
 	Avatar      string `bson:"avatar" json:"avatar"`
 	Notice      string `bson:"notice" json:"notice"`
 	Desc        string `bson:"desc" json:"desc"`
-	Total       int    `bson:"total" json:"total"`
+	MemberTotal int    `bson:"member_total" json:"member_total"`
 	MemberLimit int    `bson:"member_limit" json:"member_limit"`
 	Owner       string `bson:"owner" json:"owner"`
 	NoticeMd5   string `bson:"notice_md5" json:"notice_md5"`
