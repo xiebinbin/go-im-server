@@ -106,10 +106,10 @@ func (u *User) GetByIds(Ids []string) (map[string]string, error) {
 
 func (u *User) GetInfoByIds(Ids []string) (map[string]User, error) {
 	var data []User
-	result := make(map[string]User)
 	err := u.collection().Where(bson.M{"_id": bson.M{"$in": Ids}}).FindMany(&data)
+	result := make(map[string]User)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 	for _, v := range data {
 		result[v.ID] = v

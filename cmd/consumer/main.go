@@ -2,17 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
-	kafka2 "github.com/confluentinc/confluent-kafka-go/kafka"
-	"imsdk/internal/common/model/forward"
-	"imsdk/internal/common/model/message"
-	"imsdk/internal/common/pkg/base"
+
 	"imsdk/internal/common/pkg/config"
 	"imsdk/pkg/app"
 	"imsdk/pkg/database/mongo"
 	"imsdk/pkg/funcs"
 	"imsdk/pkg/log"
-	"imsdk/pkg/mq/kafka"
 	"imsdk/pkg/redis"
 	"os"
 	"sync"
@@ -42,7 +37,7 @@ func main() {
 	_ = os.Setenv("RUN_MODULE", "consumer")
 	_ = os.Setenv("RUN_ENV", runEnv.(string))
 	mongo.Start()
-	kafka.Start()
+	//kafka.Start()
 	redis.Start()
 	consume(ctx)
 	select {}
@@ -62,69 +57,70 @@ func consume(ctx context.Context) {
 			wg.Add(1)
 			go func(msgTopic string) {
 				defer wg.Done()
-				consumeTopic(ctx, msgTopic)
+				//consumeTopic(ctx, msgTopic)
 			}(topic)
 		}
 	}
 
 	wg.Wait()
 }
-func consumeTopic(ctx context.Context, topic string) {
-	reader, err := kafka.GetConsumeReader(topic)
-	run := true
-	for run == true {
-		ev := reader.Poll(100)
-		if ev == nil {
-			continue
-		}
-		run, err = consumer(ctx, ev, topic, reader)
-		if err != nil {
-			run, err = consumer(ctx, ev, topic, reader)
-			if err != nil {
-				run, err = consumer(ctx, ev, topic, reader)
-				if err != nil {
-					reader.CommitMessage(ev.(*kafka.Msg))
-				}
-			}
-		}
-	}
-	log.Logger().Error(ctx, "consumeTopic", "Closing consumer\n")
-	reader.Close()
-}
 
-func consumer(ctx context.Context, ev kafka2.Event, topic string, reader *kafka2.Consumer) (bool, error) {
-	var err error
-	run := true
-	defer func() {
-		if pErr := recover(); pErr != nil {
-			log.Logger().Error(ctx, "consumer panic ,err: ", pErr)
-		}
-	}()
-	switch e := ev.(type) {
-	case *kafka.Msg:
-		log.Logger().Info(ctx, fmt.Sprintf("%% Msg on %s:\n%s\n", e.TopicPartition, string(e.Value)))
-		switch topic {
-		case getTopic(base.TopicMsgToWaitReProcess):
-			err = message.ProcessMessage(ctx, e.Value)
-			break
-		case getTopic(base.TopicSocketMessagePush):
-			err = forward.PushMessageToSocket(ctx, e.Value)
-			break
-		case getTopic(base.TopicMsgToOffline):
-			err = forward.ProcessOfflineMsg(ctx, e.Value)
-			break
-		}
-		if err == nil {
-			reader.CommitMessage(e)
-		}
-	case kafka.Err:
-		log.Logger().Error(ctx, fmt.Sprintf(" Err: %v: %v\n", e.Code(), e), e)
-		if e.Code() == kafka.BrokersDown {
-			run = false
-		}
-	}
-	return run, err
-}
+//func consumeTopic(ctx context.Context, topic string) {
+//	reader, err := kafka.GetConsumeReader(topic)
+//	run := true
+//	for run == true {
+//		ev := reader.Poll(100)
+//		if ev == nil {
+//			continue
+//		}
+//		run, err = consumer(ctx, ev, topic, reader)
+//		if err != nil {
+//			run, err = consumer(ctx, ev, topic, reader)
+//			if err != nil {
+//				run, err = consumer(ctx, ev, topic, reader)
+//				if err != nil {
+//					reader.CommitMessage(ev.(*kafka.Msg))
+//				}
+//			}
+//		}
+//	}
+//	log.Logger().Error(ctx, "consumeTopic", "Closing consumer\n")
+//	reader.Close()
+//}
+
+//func consumer(ctx context.Context, ev kafka2.Event, topic string, reader *kafka2.Consumer) (bool, error) {
+//	var err error
+//	run := true
+//	defer func() {
+//		if pErr := recover(); pErr != nil {
+//			log.Logger().Error(ctx, "consumer panic ,err: ", pErr)
+//		}
+//	}()
+//	switch e := ev.(type) {
+//	case *kafka.Msg:
+//		log.Logger().Info(ctx, fmt.Sprintf("%% Msg on %s:\n%s\n", e.TopicPartition, string(e.Value)))
+//		switch topic {
+//		case getTopic(base.TopicMsgToWaitReProcess):
+//			err = message.ProcessMessage(ctx, e.Value)
+//			break
+//		case getTopic(base.TopicSocketMessagePush):
+//			err = forward.PushMessageToSocket(ctx, e.Value)
+//			break
+//		case getTopic(base.TopicMsgToOffline):
+//			err = forward.ProcessOfflineMsg(ctx, e.Value)
+//			break
+//		}
+//		if err == nil {
+//			reader.CommitMessage(e)
+//		}
+//	case kafka.Err:
+//		log.Logger().Error(ctx, fmt.Sprintf(" Err: %v: %v\n", e.Code(), e), e)
+//		if e.Code() == kafka.BrokersDown {
+//			run = false
+//		}
+//	}
+//	return run, err
+//}
 
 func getTopic(topic string) string {
 	res, _ := config.GetConfigTopic(topic)

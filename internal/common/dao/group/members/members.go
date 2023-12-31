@@ -95,7 +95,9 @@ const (
 	JoinTypeSelf   = 1
 )
 const (
-	StatusIng, StatusYes, StatusRefuse = 1, 2, 3
+	StatusRefuse = 3
+	StatusYes    = 2
+	StatusIng    = 1
 )
 
 func New() *Members {
@@ -257,7 +259,6 @@ func (m Members) GetApplyByGIds(gIds []string, status []int8) ([]ApplyRes, error
 		where["status"] = bson.M{"$in": status}
 	}
 	err := m.collection().Where(where).FindMany(&res)
-	fmt.Println("GetApplyByGIds: ", where, res)
 	if err != nil {
 		return res, err
 	}

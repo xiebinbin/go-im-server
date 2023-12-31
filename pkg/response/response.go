@@ -118,7 +118,7 @@ func RespListData(ctx *gin.Context, data interface{}) {
 		Data: res,
 	}
 	if ctx.Value(base.HeaderIsEnc).(string) == "false" {
-		resp.Data = data
+		resp.Data = enData
 		response(ctx, resp)
 		return
 	}
