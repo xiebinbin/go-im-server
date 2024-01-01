@@ -68,10 +68,10 @@ func (conf *Configuration) walk(path string, info os.FileInfo, err error) error 
 }
 
 func (conf *Configuration) GetPublicConfigDir() string {
-	rootDir := funcs.GetRoot()
-	pubConfDir := rootDir + "/config/"
-	return pubConfDir
-	//return "./config/"
+	//rootDir := funcs.GetRoot()
+	//pubConfDir := rootDir + "/config/"
+	//return pubConfDir
+	return "./config/"
 }
 
 func (conf *Configuration) GetConfigDirs() []string {

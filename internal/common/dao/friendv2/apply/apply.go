@@ -2,12 +2,13 @@ package apply
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	"imsdk/internal/common/dao"
 	"imsdk/pkg/database/mongo"
 	"imsdk/pkg/funcs"
 	"strconv"
+
+	"go.mongodb.org/mongo-driver/bson"
+	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 )
 
 type Apply struct {
@@ -22,8 +23,8 @@ type Apply struct {
 }
 
 const (
-	StatusIng               = 0
-	StatusPass              = 1
+	StatusIng               = 1
+	StatusPass              = 2
 	IsReadNo                = 0
 	IsReadYes               = 1
 	FromWayUnknown     int8 = 0

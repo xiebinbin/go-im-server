@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"imsdk/internal/common/dao"
 	"imsdk/pkg/database/mongo"
 	"imsdk/pkg/errno"
@@ -106,6 +107,7 @@ func (u *User) GetByIds(Ids []string) (map[string]string, error) {
 
 func (u *User) GetInfoByIds(Ids []string) (map[string]User, error) {
 	var data []User
+	fmt.Println("Ids---", Ids)
 	err := u.collection().Where(bson.M{"_id": bson.M{"$in": Ids}}).FindMany(&data)
 	result := make(map[string]User)
 	if err != nil {
